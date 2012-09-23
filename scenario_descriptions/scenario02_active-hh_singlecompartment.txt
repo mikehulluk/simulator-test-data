@@ -1,15 +1,29 @@
-Scenario 02: Responses of HH-type cell to step current injection
-=================================================================
+title = Scenario 01: Responses of passive cell to step current injection
 
-Create a single compartment neuron with area 'A',  with passive leak 
-channels density 'glk' and capacitance 'C'. Inject with step current 'I' from 
-t=100 until t=250. Record voltage from t=0 to t=350
+description = """
+In a simulation from t=0 to t=350
+Create a single compartment neuron cell1:
+ - area <A>, initial voltage <VS>
+ - capacitance <C>.
+Add Hodge-Huxley Na channels to cell1 <gBarNa> <erev_k> 
+Add Hodge-Huxley K channels to cell1  <gBarK>  <erev_k> 
+Add Hodge-Huxley LK channels to cell1 <gBarLK>, <erev_lk>
 
-Vary: 
- - A: 1000um2, 1600um2
- - C: 1uF/cm2, 2.0uF/cm2
- - I: 120pA, 200pA
- - glk: 0.3mS/cm2, 1.3mS/cm2
+Inject cell1 with step current <I> from t=100ms until t=250ms
+Record cell1.V as $V
+Record cell1.Na.i as $i_na
+Record cell1.K.i as $i_k
+Record cell1.LK.i as $i_k
+Record cell1.Na.m as $m
+Record cell1.Na.h as $h
+Record cell1.Na.n as $n
+
+Run the simulation
 
 
-Filename-Format: scenario2__A1000_C1_I120_GLK0.3_output.txt
+[Check Values]
+
+eps = 0.001
+values = """
+
+ """

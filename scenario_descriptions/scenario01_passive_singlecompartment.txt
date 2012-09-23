@@ -1,17 +1,54 @@
-Scenario 01: Responses of passive cell to step current injection
-==================================================================
+title = Scenario 01: Responses of passive cell to step current injection
 
-Create a single compartment neuron with area 'A',  with passive leak 
-channels density 'glk' and capacitance 'C'. Inject with step current 'I' from 
-t=100 until t=250. Record voltage from t=0 to t=350
+description = """
+In a simulation from t=0 to t=350
+Create a single compartment neuron cell1:
+ - area <A>, initial voltage <VS>
+ - capacitance <C>.
+Add passive leak to cell1
+ - channels density <gLK>
+ - reversal potential <erev>
+Inject cell1 with step current <I> from t=100ms until t=250ms
+Record cell1.V as $V
+Run the simulation
+"""
 
-Vary: 
- - A: 1000um2, 1600um2
- - C: 1uF/cm2, 2.0uF/cm2
- - I: 120pA, 200pA
- - glk: 0.3mS/cm2, 1.3mS/cm2
+[Units]
+    t = ms
+    A=um2
+    C=uF/cm2
+    VS=mV
+    I=pA
+    erev=mV
+    gLk=mS/cm2
+    V=mV
+
+[Compare Traces]
+    A = 1000, 1600
+    C = 1.0, 2.0
+    I = 0, 120, 200
+    glk =  0.3, 1.3
+    VS =  -31, -51
+    erev = -31, -60
+
+    columns = t, V
+    save_as:    scenario1_A1000_C1.0_I120_gLk0.3_result_<implementation>.txt
+		scenario1_A1%d_C%.1f_I%d_gLk%.1f_erev%2.1f_result_%s.txt
+
+[Check Values]
+
+eps = 0.001
+values = """
+|A       | C        |I       | gLk     | erev   |VS      | V[90:99].mean | V[240:249].mean  | V.max | v.min |
+|--------|----------|--------|---------|--------|--------|---------------|------------------|-------|-------|
+# If there is no injected current, and initial voltage and reversal of leak are the same, then 
+# voltage should be fixed:
+|1000    | 1.0      |0       | 1.0     |-51     |-51     |-51            | -51              | -51   | -51   |
+|1000    | 1.0      |0       | 1.0     |-31     |-31     |-31            | -31              | -31   | -31   |
+# If there is a difference between the start voltage and the resting potential, then we should 
+# decay to the reversal potential of leak
+|1000    | 1.0      |0       | 1.0     |-51     |-31     |-51            | -51              | -51   | -31   |
+|1000    | 1.0      |0       | 1.0     |-31     |-51     |-31            | -31              | -51   | -31   |
 
 
-Filename-Format: scenario1_A1000_C1_I120_GLK0.3_result_<implementation>.txt
-
- 
+ """

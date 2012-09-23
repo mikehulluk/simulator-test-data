@@ -1,0 +1,64 @@
+load_file("nrngui.hoc")
+
+// Set from the commandline:
+//A = 10000
+//I = 100
+//C = 1.0
+//VS = -51
+//LK_G = 0.1
+//LK_EREV = -51
+
+
+create soma
+access soma
+soma insert pas
+
+length = 10
+soma {
+    L = length
+    diam = A / (length * PI)
+    cm = C
+    v = VS
+    g_pas = LK_G
+    e_pas = LK_EREV
+}
+
+
+objref ic
+ic = new IClamp(0.5)
+ic.del = 100
+ic.dur = 150
+ic.amp = I
+
+// Setup the recording:
+objref vecv
+objref vect
+vect = new Vector(0.5)
+vecv = new Vector(0.5)
+vect.record(&t)
+vecv.record(&soma.v(0.5))
+
+
+// Run the simulation:
+tstop = 350
+run() 
+
+
+//\strobj = new StringFunctions()
+strdef filename
+sprint(filename, "out/scenario01_A%d_C%.1f_I%d_gLk%.1f_erev%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G,LK_EREV, VS) 
+
+// Save the data to a file:
+objref savdata
+savdata = new File()
+savdata.wopen(filename)
+savdata.printf("#t V\n")
+
+objref tempmatrix
+tempmatrix = new Matrix()
+tempmatrix.resize(vecv.size(),2)
+tempmatrix.setcol(0, vect)
+tempmatrix.setcol(1, vecv)
+tempmatrix.fprint(0,savdata, " %g")
+
+savdata.close()
