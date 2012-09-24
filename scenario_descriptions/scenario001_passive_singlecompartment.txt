@@ -38,7 +38,9 @@ Run the simulation
 [Check Values]
 
 eps = 0.001
-values = """
+
+expect = """
+
 |A       | C        |I       | gLk     | erev   |VS      | V[90:99].mean | V[240:249].mean  | V.max | v.min |
 |--------|----------|--------|---------|--------|--------|---------------|------------------|-------|-------|
 # If there is no injected current, and initial voltage and reversal of leak are the same, then 
