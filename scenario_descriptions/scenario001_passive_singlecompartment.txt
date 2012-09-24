@@ -5,9 +5,7 @@ In a simulation from t=0 to t=350
 Create a single compartment neuron cell1:
  - area <A>, initial voltage <VS>
  - capacitance <C>.
-Add passive leak to cell1
- - channels density <gLK>
- - reversal potential <erev>
+Add Leak channels to cell1 with density <gLK> and reversalpotential <erev>
 Inject cell1 with step current <I> from t=100ms until t=250ms
 Record cell1.V as $V
 Run the simulation
@@ -32,8 +30,9 @@ Run the simulation
     erev = -31, -60
 
     columns = t, V
-    save_as:    scenario1_A1000_C1.0_I120_gLk0.3_result_<implementation>.txt
-		scenario1_A1%d_C%.1f_I%d_gLk%.1f_erev%2.1f_result_%s.txt
+    # scenario1_A1000_C1.0_I120_gLk0.3_result_<implementation>.txt
+    save_as: scenario1_A1%d_C%.1f_I%d_gLk%.1f_erev%2.1f_result_%s.txt, A, C, I, glk, erev, VS
+    
 
 [Check Values]
 
@@ -43,6 +42,8 @@ expect = """
 
 |A       | C        |I       | gLk     | erev   |VS      | V[90:99].mean | V[240:249].mean  | V.max | v.min |
 |--------|----------|--------|---------|--------|--------|---------------|------------------|-------|-------|
+# NO Injected Current:
+# --------------------
 # If there is no injected current, and initial voltage and reversal of leak are the same, then 
 # voltage should be fixed:
 |1000    | 1.0      |0       | 1.0     |-51     |-51     |-51            | -51              | -51   | -51   |
@@ -52,5 +53,13 @@ expect = """
 |1000    | 1.0      |0       | 1.0     |-51     |-31     |-51            | -51              | -51   | -31   |
 |1000    | 1.0      |0       | 1.0     |-31     |-51     |-31            | -31              | -51   | -31   |
 
+# 100 pA of Injected Current:
+# ----------------------------
+|1000    | 1.0      |0       | 1.0     |-51     |-51     |   ?           | ?                | ?     | ?     |
 
  """
+
+
+
+
+

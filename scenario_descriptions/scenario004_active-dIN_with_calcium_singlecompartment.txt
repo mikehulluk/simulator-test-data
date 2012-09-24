@@ -1,0 +1,17 @@
+title = Scenario 003: Responses of cell with dIN conductances to step current injection (No Calcium)
+
+description = """
+In a simulation from t=0 to t=350
+Create a single compartment neuron cell1:
+- area 1000um2 initial voltage -52
+ - capacitance 1.0uF/cm2
+Add dIN:Na channels to cell1 
+Add dIN:Kf channels to cell1 
+Add dIN:Ks channels to cell1 
+Add dIN:LK channels to cell1 
+Add dIN:Ca channels to cell1 with  permeability <pca>
+Inject cell1 with step current <I> from t=100ms until t=250ms
+Record cell1.V as $V
+Record cell1.Ca.i as $i_na
+Run the simulation
+"""

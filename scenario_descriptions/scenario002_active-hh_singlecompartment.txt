@@ -1,29 +1,45 @@
-title = Scenario 01: Responses of passive cell to step current injection
+title = Scenario 002: Responses of cell with HH conductances to step current injection
 
 description = """
 In a simulation from t=0 to t=350
 Create a single compartment neuron cell1:
- - area <A>, initial voltage <VS>
- - capacitance <C>.
-Add Hodge-Huxley Na channels to cell1 <gBarNa> <erev_k> 
-Add Hodge-Huxley K channels to cell1  <gBarK>  <erev_k> 
-Add Hodge-Huxley LK channels to cell1 <gBarLK>, <erev_lk>
-
+ - area <A>, initial voltage -54.3
+ - capacitance 1.0uF/cm2
+Add Hodge-Huxley:Na channels to cell1 with density <gBarNa> and reversalpotential <erev_na> 
+Add Hodge-Huxley:K channels to cell1  with density 36mS/cm2  and reversalpotential -77mV
+Add Hodge-Huxley:LK channels to cell1 with density 0.3mS/cm2 and reversalpotential -54.3
 Inject cell1 with step current <I> from t=100ms until t=250ms
 Record cell1.V as $V
 Record cell1.Na.i as $i_na
 Record cell1.K.i as $i_k
-Record cell1.LK.i as $i_k
+Record cell1.LK.i as $i_lk
 Record cell1.Na.m as $m
 Record cell1.Na.h as $h
 Record cell1.Na.n as $n
-
 Run the simulation
+"""
+
+[Units]
+    t = ms
+    A=um2
+    I=pA
+    erev_na=mV
+    gBarNa=mS/cm2
+    V=mV
+    i_na, i_k,i_lk = mA/cm2
+    m,h,n = 
+
+[Compare Traces]
+    gBarNa = 120, 200, 
+    erev_na = 50, 75
+    I = 100, 200, 300
+    
+    columns = t, V, i_na, i_k, i_lk, m, n, h
+    
+    
+    save_as: scenario002_A%d_GBARNA%.1f_EREV <A>, <gBarNa>, <erev_na> 
 
 
 [Check Values]
-
-eps = 0.001
-values = """
 
  """
