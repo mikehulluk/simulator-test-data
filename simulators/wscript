@@ -1,6 +1,14 @@
-def generate(ctx):
-    ctx.recurse('10_neuron')
 
+
+
+
+def generate(ctx):
+    recurse(ctx)
 
 def cleanup(ctx):
+    recurse(ctx)
+
+
+def recurse(ctx):
     ctx.recurse('10_neuron')
+    ctx.recurse('20_morphforge')

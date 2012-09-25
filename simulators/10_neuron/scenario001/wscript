@@ -5,7 +5,7 @@ import waf_util
 
 @waf_util.chdirdecorator
 def cleanup(ctx):
-    rmtree('output')
+    waf_util.rmtree('output')
 
 @waf_util.chdirdecorator
 def generate(ctx):

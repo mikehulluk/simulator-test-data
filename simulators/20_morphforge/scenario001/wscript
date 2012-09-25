@@ -1,0 +1,23 @@
+ 
+import os
+import waf_util
+ 
+def generate(ctx):
+        if not os.path.exists('output/'):
+            assert False
+        my_mf_run()
+
+@waf_util.chdirdecorator
+def cleanup(ctx):
+    waf_util.rmtree('output')
+
+
+
+ 
+ 
+def my_mf_run():
+    import morphforge
+    with open('output/test_out1.txt','w') as f:
+        f.write('Hello')
+    
+        

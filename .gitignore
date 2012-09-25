@@ -1,1 +1,4 @@
-/build/c4che/_cache.py
+/.lock-waf_linux2_build
+/build/*
+/output/*
+*.pyc
