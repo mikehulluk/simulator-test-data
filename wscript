@@ -20,3 +20,7 @@ def cleanup(ctx):
     ctx.recurse('simulators')
 
 
+
+def compare(ctx):
+    import simtest_utils
+    simtest_utils.check_all_scenarios()

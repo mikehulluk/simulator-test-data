@@ -46,7 +46,7 @@ run()
 
 //\strobj = new StringFunctions()
 strdef filename
-sprint(filename, "output/scenario01_A%d_C%.1f_I%d_gLk%.1f_erev%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G,LK_EREV, VS) 
+sprint(filename, "output/scenario001_A%d_C%.1f_I%d_GLK%.1f_EREV%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G,LK_EREV, VS) 
 
 // Save the data to a file:
 objref savdata

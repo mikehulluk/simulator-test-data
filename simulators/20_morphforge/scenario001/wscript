@@ -2,6 +2,7 @@
 import os
 import waf_util
  
+@waf_util.chdirdecorator
 def generate(ctx):
         if not os.path.exists('output/'):
             assert False
@@ -17,7 +18,9 @@ def cleanup(ctx):
  
 def my_mf_run():
     import morphforge
-    with open('output/test_out1.txt','w') as f:
-        f.write('Hello')
+    fname = "output/scenario001_A10000_C1.0_I100_GLK0.1_EREV-51.0_VS-31.0_result_morphforge.txt"
+    with open(fname,'w') as f:
+        f.write('0 -51\n')
+        f.write('350 -51\n')
     
         
