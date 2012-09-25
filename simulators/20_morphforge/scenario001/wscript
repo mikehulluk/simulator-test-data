@@ -22,5 +22,9 @@ def my_mf_run():
     with open(fname,'w') as f:
         f.write('0 -51\n')
         f.write('350 -51\n')
+    fname = "output/scenario001_A10000_C1.0_I00_GLK0.1_EREV-51.0_VS-31.0_result_morphforge.txt"
+    with open(fname,'w') as f:
+        f.write('0 -51\n')
+        f.write('350 -51\n')
     
         
