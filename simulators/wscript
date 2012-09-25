@@ -1,0 +1,6 @@
+def generate(ctx):
+    ctx.recurse('10_neuron')
+
+
+def cleanup(ctx):
+    ctx.recurse('10_neuron')
