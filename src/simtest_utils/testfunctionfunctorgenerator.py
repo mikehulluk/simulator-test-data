@@ -45,7 +45,7 @@ class TableTestFunctor(object):
             # Interpolate the values at the slice points, add them to 
             # the top of the matrix,and sort the matrix by '0' column (time)
             interp_pts = np.array(interp_pts)
-            interp_vals = np.interp(interp_pts, data_raw[0,:], data_raw[1,:])
+            interp_vals = np.interp(interp_pts, data_raw[:,0], data_raw[:,1])
             new_rows = np.vstack( (interp_pts, interp_vals) ).T
             data_raw = np.vstack( (new_rows, data_raw) )
             data_raw = data_raw[data_raw[:,0].argsort()]
@@ -59,8 +59,10 @@ class TableTestFunctor(object):
             keep_mask = np.logical_and(keep_mask, (data_raw[:,0] <= time_stop+dt) )
 
         data_slice = data_raw[keep_mask,:]
-        assert data_slice.shape[0] == 2
-        assert data_slice.shape[1] >= 2
+        print data_slice
+        print data_slice.shape
+        assert data_slice.shape[1] == 2
+        assert data_slice.shape[0] >= 2
 
         return data_slice
 
