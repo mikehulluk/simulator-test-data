@@ -1,7 +1,11 @@
- 
+
 import os
 import waf_util
- 
+
+import numpy as np
+
+
+
 @waf_util.chdirdecorator
 def generate(ctx):
         if not os.path.exists('output/'):
@@ -14,17 +18,57 @@ def cleanup(ctx):
 
 
 
- 
- 
+
+
+def _run_sim(GLK_in_mS_per_cm2, EREV_in_mV, I_in_pA, AREA_in_um2, VS_in_mV, C_in_uF_per_cm2):
+    import morphforge.stdimports as mf
+    import morphforgecontrib.stdimports as mfc
+    from morphforge.stdimports import units as U
+
+    # The simulation:
+    env = mf.NEURONEnvironment()
+    sim = env.Simulation()
+    cell = sim.create_cell(area=AREA_in_um2 * U.um2, initial_voltage=VS_in_mV*U.mV)
+    lk_chl = env.Channel(mfc.StdChlLeak,
+                    conductance=GLK_in_mS_per_cm2 * U.mS/U.cm2,
+                    reversalpotential=EREV_in_mV * U.mV )
+
+    cell.apply_channel(lk_chl)
+    sim.create_currentclamp(cell_location=cell.soma,
+                            amp=I_in_pA * U.pA,
+                            delay=100*U.ms,
+                            dur=150*U.ms)
+    v = sim.record(cell)
+    res = sim.run()
+    v_tr = res.get_trace(v)
+    return v_tr
+
+
+def run_sim(GLK_in_mS_per_cm2, EREV_in_mV, I_in_pA, AREA_in_um2, VS_in_mV, C_in_uF_per_cm2):
+    v_tr = _run_sim(GLK_in_mS_per_cm2=GLK_in_mS_per_cm2,
+                    EREV_in_mV=EREV_in_mV,
+                    I_in_pA=I_in_pA,
+                    AREA_in_um2=AREA_in_um2,
+                    VS_in_mV=VS_in_mV,
+                    C_in_uF_per_cm2=C_in_uF_per_cm2 )
+    time = v_tr.time_pts_ms
+    data = v_tr.data_pts_in('mV')
+    d = np.vstack((time, data)).T
+    print d
+
+    fname_tmpl = "output/scenario001_A{A}_C{C}_I{I}_GLK{GLK}_EREV{EREV}_VS{VS}_result_morphforge.txt"
+    fname = fname_tmpl.format(A=AREA_in_um2,
+                              GLK=GLK_in_mS_per_cm2,
+                              EREV=EREV_in_mV,
+                              I=I_in_pA,
+                              VS=VS_in_mV,
+                              C=C_in_uF_per_cm2)
+    np.savetxt(fname, d)
+
 def my_mf_run():
-    import morphforge
-    fname = "output/scenario001_A10000_C1.0_I100_GLK0.1_EREV-51.0_VS-31.0_result_morphforge.txt"
-    with open(fname,'w') as f:
-        f.write('0 -51\n')
-        f.write('350 -51\n')
-    fname = "output/scenario001_A10000_C1.0_I00_GLK0.1_EREV-51.0_VS-31.0_result_morphforge.txt"
-    with open(fname,'w') as f:
-        f.write('0 -51\n')
-        f.write('350 -51\n')
-    
-        
+
+    run_sim(GLK_in_mS_per_cm2=0.1, EREV_in_mV=-51, I_in_pA=100, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
+
+
+    # We ran fine :)
+    print 'MF-RUN! OK'

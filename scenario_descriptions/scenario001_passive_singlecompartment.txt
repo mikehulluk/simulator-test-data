@@ -34,8 +34,7 @@ Run the simulation
 [Output Format]
 columns = t, V
 base_filename = scenario001_A<A>_C<C>_I<I>_GLK<GLK>_EREV<EREV>_VS<VS>_result_
-# scenario1_A1000_C1.0_I120_gLk0.3_result_<implementation>.txt
-    
+
 
 [Check Values]
 
@@ -55,6 +54,7 @@ expectations = """
 # decay to the reversal potential of leak
 |10000    | 1.0      |0       | 1.0     |-51     |-31     |-51            | -51              | -51   | -31   |
 |10000    | 1.0      |0       | 1.0     |-31     |-51     |-31            | -31              | -51   | -31   |
+
 
 # 100 pA of Injected Current:
 # ----------------------------

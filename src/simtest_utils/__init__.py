@@ -12,6 +12,10 @@ rootdir = os.path.abspath(rootdir)
 scenario_path = os.path.join(rootdir, 'scenario_descriptions')
 output_path = os.path.join(rootdir, 'output')
 
+
+from testfunctionfunctorgenerator import TableTestFunctor
+
+
 def check_all_scenarios():
     print 'Comparing Scenarios'
     for scenario_file in sorted( os.listdir(scenario_path) ):
@@ -21,11 +25,6 @@ def check_all_scenarios():
         check_scenario( os.path.join( scenario_path, scenario_file ) )
 
 
-
-def parse_header_output_functor(expr, value, eps):
-    def check_func(data_matrix, colnames):
-        return  "".join( ['Check that:', expr, 'is ', value, '(eps:',eps,')'])
-    return check_func
 
 
 
@@ -69,7 +68,8 @@ def parse_table(table_str, ParamTuple, variables, eps):
             value = line[output_table_indices[output]]
             if value is None:
                 continue
-            valiation = parse_header_output_functor(expr=output, value=value, eps=eps)
+            value = float(value)
+            valiation = TableTestFunctor(test_expr=output, expected_value=value, eps=eps)
             validations[paramtuple].append(valiation)
 
     return validations
@@ -111,10 +111,6 @@ def check_scenario(scenario_file):
         print set(expected_variables), set(parameters.keys() )
         assert False, 'Parameters do not match filename template'
 
-
-
-
-
     # Map ParamTuple objects to a dictionary:{Impl:filename}
     # (Look for generated files on the hard-disk)
     params_to_files = {}
@@ -122,9 +118,8 @@ def check_scenario(scenario_file):
     for sim in simulators:
         print '   * Loading Data for:', sim
         sim_output_dir = os.path.join(scen_output_dir, sim)
-        files = os.listdir(sim_output_dir)
 
-        for filename in files:
+        for filename in os.listdir(sim_output_dir):
             m = filename_regex.match(filename)
             if not m:
                 print '      -> ERROR: Unable to parse:', filename
@@ -162,35 +157,36 @@ def check_scenario(scenario_file):
             ax.legend()
 
 
-    #for param in params_to_files:
-    #    print '::Param::', param
+    TableResult = collections.namedtuple('TableResult', ['validator', 'impl', 'result', 'parameters'] )
+
     # Look at the expect-values table:
     if 'Check Values' in config:
         print ' -- Building Validation Table'
-        eps = config['Check Values']['eps']
+        eps = float( config['Check Values']['eps'] )
         table_str = config['Check Values']['expectations']
         validators = parse_table(table_str, ParamTuple, variables=expected_variables,eps=eps)
 
         print ' -- Evaluating Validation Table'
+        results = []
         for param, validators in validators.iteritems():
             if not param in params_to_files:
-                print '     >> !! No Traces found to evalute against!', param
-            else:
-                print '     >> Evaluating ', param
-                impls = params_to_files[param]
-                for implname, filename in impls.iteritems():
-                    print '        ** Vaidating traces in :', filename
-                    data_matrix = np.loadtxt(filename)
-                    for v in validators:
-                        print '          * ', v(data_matrix, colnames=columns)
-        print
+                continue
 
+            impls = params_to_files[param]
+            for implname, filename in impls.iteritems():
+                data_matrix = np.loadtxt(filename)
+                for validator in validators:
+                    result = validator.check_data(data_matrix, colnames=columns)
+                    tr = TableResult(validator=validator, impl=implname, result=result, parameters=param)
+                    results.append(tr)
 
-        return
-
-
-
-
+        impl_names = set( [tr.impl for tr in results] )
+        for impl in impl_names:
+            impl_results = [tr for tr in results if tr.impl == impl]
+            print '   * For Implementation %s' % impl
+            for ip in impl_results:
+                res_str = 'PASSED' if ip.result  else 'FAILED'
+                print '    - %s : %s for %s' % (res_str, ip.validator.to_str().ljust(10), ip.parameters)
 
     pylab.show()
 

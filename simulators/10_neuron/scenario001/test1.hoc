@@ -1,34 +1,38 @@
 load_file("nrngui.hoc")
 
 // Set from the commandline:
-//A = 10000
-//I = 100
-//C = 1.0
-//VS = -51
-//LK_G = 0.1
-//LK_EREV = -51
+//A = 
+//I = 
+//C = 
+//VS = 
+//LK_G = 
+//LK_EREV = 
 
 
 create soma
 access soma
 soma insert pas
 
-length = 10
+length = 100
 soma {
     L = length
     diam = A / (length * PI)
     cm = C
     v = VS
-    g_pas = LK_G
-    e_pas = LK_EREV
-}
 
+    //(NEURON works in S/cm2 and mV)
+    g_pas = LK_G / 1000
+    e_pas = LK_EREV 
+}
+soma for (x,0) { // iterate over internal nodes
+        v = -20
+      }
 
 objref ic
 ic = new IClamp(0.5)
 ic.del = 100
 ic.dur = 150
-ic.amp = I
+ic.amp = I / 1000.
 
 // Setup the recording:
 objref vecv
@@ -38,7 +42,9 @@ vecv = new Vector(0.5)
 vect.record(&t)
 vecv.record(&soma.v(0.5))
 
-
+soma.v(0.5) = -31
+//#soma.V = -31
+//v(soma) = -31
 // Run the simulation:
 tstop = 350
 run() 
@@ -46,7 +52,7 @@ run()
 
 //\strobj = new StringFunctions()
 strdef filename
-sprint(filename, "output/scenario001_A%d_C%.1f_I%d_GLK%.1f_EREV%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G,LK_EREV, VS) 
+sprint(filename, "output/scenario001_A%d_C%.1f_I%d_GLK%.1f_EREV%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G, LK_EREV, VS) 
 
 // Save the data to a file:
 objref savdata
