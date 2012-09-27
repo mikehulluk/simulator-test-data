@@ -23,10 +23,9 @@ class TableTestFunctor(object):
     def __call__(self, data_matrix, colnames):
         data_slice = self._get_data_slice(data_matrix=data_matrix, colnames=colnames)
         result = self._apply_operation(data_slice)
+        msg =  '%s ==> %f == %f [Res==Expected] (eps:%f)' % (self.test_expr, result, self.expected_value, self.eps)
+        return np.fabs(result - self.expected_value) < self.eps, msg #"Found: %f Expected: %f"%(result, self.expected_value)
 
-        return np.fabs(result - self.expected_value) < self.eps, "Found: %f Expected: %f"%(result, self.expected_value)
-
-        return  "".join( ['Check that:', self.test_expr, ' is ', self.expected_value, '(eps:',self.eps,')'])
 
     def _get_data_slice(self, data_matrix, colnames):
         dt = 0.00000001
@@ -61,10 +60,10 @@ class TableTestFunctor(object):
         if time_stop is not None:
             keep_mask = np.logical_and(keep_mask, (data_raw[:,0] <= time_stop+dt) )
 
-        print keep_mask
+        #print keep_mask
         data_slice = data_raw[keep_mask,:]
-        print data_slice
-        print data_slice.shape
+        #print data_slice
+        #print data_slice.shape
         assert data_slice.shape[1] == 2
         assert data_slice.shape[0] >= 2
 
@@ -82,7 +81,6 @@ class TableTestFunctor(object):
         if function == 'max':
             return float( np.max(data_slice[:,1]) )
         if function == 'mean':
-            print data_slice
             # We have irregularly spaced datam, so calculate the area:
             area = integrate.simps(data_slice[:,1], data_slice[:,0])
             t_range = data_slice[-1,0] - data_slice[0,0]

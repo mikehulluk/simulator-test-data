@@ -1,0 +1,6 @@
+[submodule "src/glob2"]
+	path = src/glob2
+	url = git://github.com/miracle2k/python-glob2.git
+[submodule "src/clint"]
+	path = src/clint
+	url = git://github.com/kennethreitz/clint.git

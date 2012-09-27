@@ -1,13 +1,48 @@
-import os
-import configobj
-import re
-import decimal
-import collections
-import numpy as np
-import pylab
 
+import sys
+import os
+
+# Find the root_directory
 rootdir = os.path.join( os.path.dirname(__file__), '../../')
 rootdir = os.path.abspath(rootdir)
+# -----------------------
+
+
+
+# Add glob2 and clint to the path
+# --------------------------------
+glob2dir = os.path.join(rootdir, 'src/glob2/src/')
+sys.path.append(glob2dir)
+clintdir = os.path.join(rootdir, 'src/clint/')
+sys.path.append(clintdir)
+# --------------------------------
+
+
+
+import os
+import re
+import decimal
+import sys
+import collections
+import itertools
+
+
+import glob2
+#import clint
+import numpy as np
+import pylab
+import configobj
+
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
+
 
 scenario_path = os.path.join(rootdir, 'scenario_descriptions')
 output_path = os.path.join(rootdir, 'output')
@@ -83,9 +118,9 @@ def check_scenario(scenario_file):
     config = configobj.ConfigObj(scenario_file)
     print config['title']
 
+    # Generate the file-list:
     scen_output_dir = os.path.join(output_path, config['scenario_short'] )
-    simulators = os.listdir(scen_output_dir)
-    print ' -- Simulators found', simulators
+    file_list = [f for f in glob2.glob(scen_output_dir+'/**/*') if os.path.isfile(f) ]
 
 
     # Look at the configuration
@@ -94,15 +129,21 @@ def check_scenario(scenario_file):
     parameters = config['Parameter Values']
     output_filename = config['Output Format']['base_filename']
     columns = config['Output Format']['columns']
-    print ' -- Parameters', parameters.keys()
-    print ' -- Output Columns', columns
-    print ' -- Output Filename:', "'%s'" % output_filename
     re_vars = re.compile(r"""<[A-Za-z0-9_]*>""")
     expected_variables = re_vars.findall(output_filename)
     expected_variables = [ exp_var[1:-1] for exp_var in expected_variables]
-    expected_filename_regex = re_vars.sub(r'(-?[0-9]*(?:\.[0-9]*)?)', output_filename) + '(.*)'
+    expected_filename_regex = re_vars.sub(r'(-?[0-9]*(?:\.[0-9]*)?)', output_filename) 
+    expected_filename_regex = '(?:.*/)?' + expected_filename_regex + '(.*)'
+
+    print ' -- Parameters', parameters.keys()
+    print ' -- Output Columns', columns
+    print ' -- Output Filename:', "'%s'" % output_filename
     print '    * Expected Variables:', expected_variables
     print '    * Expected Filename Regex:', expected_filename_regex
+
+
+    # Compile the filename regular expression, and create a named-tuple for
+    # storing the parameter values:
     filename_regex = re.compile(expected_filename_regex  )
     ParamTuple = collections.namedtuple('ParamTuple', expected_variables )
 
@@ -111,41 +152,60 @@ def check_scenario(scenario_file):
         print set(expected_variables), set(parameters.keys() )
         assert False, 'Parameters do not match filename template'
 
-    # Map ParamTuple objects to a dictionary:{Impl:filename}
-    # (Look for generated files on the hard-disk)
-    params_to_files = {}
-    print ' -- Searching for files:'
-    for sim in simulators:
-        print '   * Loading Data for:', sim
-        sim_output_dir = os.path.join(scen_output_dir, sim)
 
-        for filename in os.listdir(sim_output_dir):
-            m = filename_regex.match(filename)
-            if not m:
-                print '      -> ERROR: Unable to parse:', filename
-            else:
-                print '      -> PARSED:', filename
-                params, impl = m.groups()[:-1], m.groups()[-1]
-                params = ParamTuple(**dict([(var_name, decimal.Decimal(param)) for (var_name, param) in zip(expected_variables, params)]))
+    # Look at all output files and find all the implementations:
+    # Categorise all output files into a map impl_param_filename_dict[impl][param][filename]
+    print ' -- Searching Files:'
+    impl_param_filename_dict = collections.defaultdict(dict)
+    unexpected_files = []
+    for filename in file_list:
+        m = filename_regex.match(filename)
+        if m:
+            params, impl = m.groups()[:-1], m.groups()[-1]
+            params = ParamTuple(**dict([(var_name, decimal.Decimal(param)) for (var_name, param) in zip(expected_variables, params)]))
+            assert not params in impl_param_filename_dict[impl], 'Duplicate Parameters foudn!'
+            impl_param_filename_dict[impl][params] = filename
+        else:
+            unexpected_files.append(filename)
 
-                if not params in params_to_files:
-                    params_to_files[params] = {}
-                params_to_files[params][impl] = os.path.join(sim_output_dir,filename)
+    for impl,params in impl_param_filename_dict.iteritems():
+        print '    * %d files found for %s'% (len(params), impl)
+    print '    * %d unexpected files found' % len(unexpected_files)
 
 
-    # Iterate through our ParamTuple objects.
-    # For each, plot all the different implementation
-    print ' -- Inspecting Found Files for plotting:'
-    for param, impls in params_to_files.iteritems():
-        print '   * ', param
-        n_traces = len(columns) -1
+    # Build an dictionary mapping {params -> {impl: filename, impl:filename} }
+    # param_impl_filename[param][impl] -> filename
+    all_params = set( itertools.chain(*[ v.keys() for v in impl_param_filename_dict.values()] ) )
+    print '  * Parameter Sets Found', len(all_params)
+    param_impl_filename_dict = {}
+    for param in all_params:
+        impl_with_param = [impl for impl in impl_param_filename_dict.keys() if param in impl_param_filename_dict[impl] ]
+        param_impl_filename_dict[param] = {}
+        for impl in impl_with_param:
+            param_impl_filename_dict[param][impl] = impl_param_filename_dict[impl][param]
+
+    # Parameter Evaluators:
+    validators = None
+    # Look at the expect-values table:
+    if 'Check Values' in config:
+        print ' -- Building Validation Table'
+        eps = float( config['Check Values']['eps'] )
+        table_str = config['Check Values']['expectations']
+        validators = parse_table(table_str, ParamTuple, variables=expected_variables,eps=eps)
+
+
+    # Do the output:
+    # #########################
+    # Plot Comparitive graphs:
+    n_traces = len(columns) - 1
+    for param, impl_data in param_impl_filename_dict.iteritems():
         f = pylab.figure()
         f.suptitle('For Parameters: %s' % str(param))
-        axes = [ f.add_subplot(n_traces,1,i+1) for i in range(n_traces) ]
+        axes = [f.add_subplot(n_traces,1,i+1) for i in range(n_traces) ]
 
         # Plot the data:
-        for (impl,filename) in impls.iteritems():
-            print '       ->', impl
+        for (impl,filename) in impl_data.iteritems():
+            #print '       ->', impl
             data=  np.loadtxt(filename)
             for i in range(n_traces):
                 axes[i].plot( data[:,0], data[:,i+1],linewidth=2, alpha=0.5, label='%s-%s'%(impl, columns[i+1]) )
@@ -157,43 +217,23 @@ def check_scenario(scenario_file):
             ax.legend()
 
 
-    TableResult = collections.namedtuple('TableResult', ['validator', 'impl', 'result', 'parameters', 'message'] )
 
-    # Look at the expect-values table:
-    if 'Check Values' in config:
-        print ' -- Building Validation Table'
-        eps = float( config['Check Values']['eps'] )
-        table_str = config['Check Values']['expectations']
-        validators = parse_table(table_str, ParamTuple, variables=expected_variables,eps=eps)
-
-        print ' -- Evaluating Validation Table'
-        results = []
-        for param, validators in validators.iteritems():
-            if not param in params_to_files:
-                print 'Skipping Line', param
+    for impl, param_filename_dict in impl_param_filename_dict.iteritems():
+        print '   * Checking Implementation Values against tables: %s' %impl
+        for parameter, _validators in validators.iteritems():
+            if not parameter in param_filename_dict:
+                print bcolors.WARNING, '        * Missing Parameters:',parameter, bcolors.ENDC
                 continue
 
-            impls = params_to_files[param]
-            for implname, filename in impls.iteritems():
-                data_matrix = np.loadtxt(filename)
-                for validator in validators:
-                    result, message = validator.check_data(data_matrix, colnames=columns)
-                    tr = TableResult(validator=validator, impl=implname, result=result, parameters=param, message=message)
-                    results.append(tr)
+            print '       * Checking against parameters:',parameter
+            # Load the data:
+            data = np.loadtxt(param_filename_dict[parameter])
+            for validator in _validators:
+                result, message = validator.check_data(data, colnames=columns)
+                print (bcolors.FAIL if not result else bcolors.OKGREEN),
+                print  '           - ', result, message, bcolors.ENDC
+                #print bcolors.ENDC,
 
-        impl_names = set( [tr.impl for tr in results] )
-        for impl in impl_names:
-            impl_results = [tr for tr in results if tr.impl == impl]
-            print '   * For Implementation %s' % impl
-            for ip in impl_results:
-                res_str = 'PASSED' if ip.result  else 'FAILED'
-                print '    - %s : %s %s for %s' % (res_str, ip.validator.to_str().ljust(10), ip.message, ip.parameters)
-
-    pylab.show()
-
-
-
-        #print files
 
 
 

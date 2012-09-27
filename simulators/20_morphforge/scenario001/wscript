@@ -1,9 +1,9 @@
 
 import os
-import waf_util
-
+import itertools
 import numpy as np
 
+import waf_util
 
 
 @waf_util.chdirdecorator
@@ -34,6 +34,7 @@ def _run_sim(GLK_in_mS_per_cm2, EREV_in_mV, I_in_pA, AREA_in_um2, VS_in_mV, C_in
                     reversalpotential=EREV_in_mV * U.mV )
 
     cell.apply_channel(lk_chl)
+    cell.set_passive(mf.PassiveProperty.SpecificCapacitance, C_in_uF_per_cm2 * U.uF / U.cm2)
     sim.create_currentclamp(cell_location=cell.soma,
                             amp=I_in_pA * U.pA,
                             delay=100*U.ms,
@@ -54,9 +55,9 @@ def run_sim(GLK_in_mS_per_cm2, EREV_in_mV, I_in_pA, AREA_in_um2, VS_in_mV, C_in_
     time = v_tr.time_pts_ms
     data = v_tr.data_pts_in('mV')
     d = np.vstack((time, data)).T
-    print d
+    #print d
 
-    fname_tmpl = "output/scenario001_A{A}_C{C}_I{I}_GLK{GLK}_EREV{EREV}_VS{VS}_result_morphforge.txt"
+    fname_tmpl = "output/scenario001_A{A}_C{C}_I{I}_GLK{GLK}_EREV{EREV}_VS{VS}_result_morphforge"
     fname = fname_tmpl.format(A=AREA_in_um2,
                               GLK=GLK_in_mS_per_cm2,
                               EREV=EREV_in_mV,
@@ -67,10 +68,19 @@ def run_sim(GLK_in_mS_per_cm2, EREV_in_mV, I_in_pA, AREA_in_um2, VS_in_mV, C_in_
 
 def my_mf_run():
 
-    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-51, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-51, C_in_uF_per_cm2=1.0 )
-    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-51, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
-    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-31, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-51, C_in_uF_per_cm2=1.0 )
-    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-31, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
+    Is = [0, 120, 200]
+    As = [10000, 16000]
+    VSs =[-51, -31]
+    EREVs=[-31,-51]
+    GLKs =[0.3,1.3]
+    Cs = [1.0,2.0]
+
+    for (A,C,I,GLK,EREV,VS) in itertools.product( As,Cs,Is,GLKs,EREVs,VSs):
+        run_sim(GLK_in_mS_per_cm2=GLK, EREV_in_mV=EREV, I_in_pA=I, AREA_in_um2=A, VS_in_mV=VS, C_in_uF_per_cm2=C )
+    #run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-51, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-51, C_in_uF_per_cm2=1.0 )
+    #run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-51, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
+    #run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-31, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-51, C_in_uF_per_cm2=1.0 )
+    #run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-31, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
 
     # We ran fine :)
     print 'MF-RUN! OK'
