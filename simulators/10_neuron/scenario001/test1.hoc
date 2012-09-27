@@ -20,7 +20,7 @@ soma {
     cm = C
     v = VS
 
-    //(NEURON works in S/cm2 and mV)
+    //(NEURON works in S/cm2 and mV (LK_G is in mS/cm2) )
     g_pas = LK_G / 1000
     e_pas = LK_EREV 
 }

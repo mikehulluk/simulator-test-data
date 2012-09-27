@@ -70,19 +70,19 @@ def p_expression_output_expr1(p):
     'output_expr : array_section '
     p[0] = TableOutputExpr(src_variable=p[1][0],
                            slice_ = p[1][1],
-                           function = [None,None])
+                           function = [None,(None,)])
 
 def p_expression_output_expr2(p):
     'output_expr : array_section DOT function_name'
     p[0] = TableOutputExpr(src_variable=p[1][0],
                            slice_ = p[1][1],
-                           function = [p[3], None])
+                           function = [p[3], (None,)])
 
 def p_expression_output_expr3(p):
-    'output_expr : array_section LSQBRACKET NUMBER RSQBRACKET'
+    'output_expr : array_name LSQBRACKET NUMBER RSQBRACKET'
     p[0] = TableOutputExpr(src_variable=p[1][0],
-                           slice_ = p[1][1],
-                           function = ['at', p[3] ])
+                           slice_ = [None,None],
+                               function = ['at', (p[3],) ])
 
 def p_expression_array_name(p):
     'array_name : ID'

@@ -67,8 +67,10 @@ def run_sim(GLK_in_mS_per_cm2, EREV_in_mV, I_in_pA, AREA_in_um2, VS_in_mV, C_in_
 
 def my_mf_run():
 
-    run_sim(GLK_in_mS_per_cm2=0.1, EREV_in_mV=-51, I_in_pA=100, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
-
+    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-51, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-51, C_in_uF_per_cm2=1.0 )
+    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-51, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
+    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-31, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-51, C_in_uF_per_cm2=1.0 )
+    run_sim(GLK_in_mS_per_cm2=0.3, EREV_in_mV=-31, I_in_pA=120, AREA_in_um2=10000, VS_in_mV=-31, C_in_uF_per_cm2=1.0 )
 
     # We ran fine :)
     print 'MF-RUN! OK'

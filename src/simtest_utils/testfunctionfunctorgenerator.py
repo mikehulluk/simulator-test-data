@@ -24,11 +24,13 @@ class TableTestFunctor(object):
         data_slice = self._get_data_slice(data_matrix=data_matrix, colnames=colnames)
         result = self._apply_operation(data_slice)
 
-        return np.fabs(result - self.expected_value) < self.eps
+        return np.fabs(result - self.expected_value) < self.eps, "Found: %f Expected: %f"%(result, self.expected_value)
 
         return  "".join( ['Check that:', self.test_expr, ' is ', self.expected_value, '(eps:',self.eps,')'])
 
     def _get_data_slice(self, data_matrix, colnames):
+        dt = 0.00000001
+
         var_name = self.condition_info.src_variable
         assert var_name in colnames, "Can't find variable: %s" % var_name
         col_index = colnames.index(var_name)
@@ -39,6 +41,8 @@ class TableTestFunctor(object):
 
         # Interpolate the data to include start and end points of the slice:
         interp_pts = [ t for t in (time_start,time_stop) if t is not None]
+        #Make sure we don't duplicate points if they are already in there:
+        interp_pts = [ t for t in interp_pts if np.fabs(data_matrix[:,0]-t).min() > dt ] #
         for p in interp_pts:
             assert data_raw[0,0] <= p <= data_raw[-1,0], 'Slice Indices fall outside of data range: %f [%f %f]' % (p, data_raw[0,0], data_raw[-1,0] )
         if interp_pts:
@@ -50,14 +54,14 @@ class TableTestFunctor(object):
             data_raw = np.vstack( (new_rows, data_raw) )
             data_raw = data_raw[data_raw[:,0].argsort()]
 
-        keep_mask = np.empty(data_raw.shape[0])
+        keep_mask = np.empty(data_raw.shape[0], dtype=np.dtype('bool'))
         keep_mask.fill(True)
-        dt = 0.00000001
         if time_start is not None:
             keep_mask = np.logical_and(keep_mask, (data_raw[:,0] >= time_start-dt) )
         if time_stop is not None:
             keep_mask = np.logical_and(keep_mask, (data_raw[:,0] <= time_stop+dt) )
 
+        print keep_mask
         data_slice = data_raw[keep_mask,:]
         print data_slice
         print data_slice.shape
@@ -78,13 +82,19 @@ class TableTestFunctor(object):
         if function == 'max':
             return float( np.max(data_slice[:,1]) )
         if function == 'mean':
+            print data_slice
             # We have irregularly spaced datam, so calculate the area:
             area = integrate.simps(data_slice[:,1], data_slice[:,0])
             t_range = data_slice[-1,0] - data_slice[0,0]
-            return float( area/t_range )
+            res = float( area/t_range )
+            #print area, t_range
+            #print res
+            #assert False
+            return res
+
         if function == 'at':
             t = params[0]
-            res = np.interp([t], data_slice[:,1], data_slice[:,0])
+            res = np.interp([t], data_slice[:,0], data_slice[:,1])
             return float( res[0] )
 
         assert False, 'Unexpected function found: %s' % function

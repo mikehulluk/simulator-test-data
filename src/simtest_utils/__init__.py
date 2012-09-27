@@ -157,7 +157,7 @@ def check_scenario(scenario_file):
             ax.legend()
 
 
-    TableResult = collections.namedtuple('TableResult', ['validator', 'impl', 'result', 'parameters'] )
+    TableResult = collections.namedtuple('TableResult', ['validator', 'impl', 'result', 'parameters', 'message'] )
 
     # Look at the expect-values table:
     if 'Check Values' in config:
@@ -170,14 +170,15 @@ def check_scenario(scenario_file):
         results = []
         for param, validators in validators.iteritems():
             if not param in params_to_files:
+                print 'Skipping Line', param
                 continue
 
             impls = params_to_files[param]
             for implname, filename in impls.iteritems():
                 data_matrix = np.loadtxt(filename)
                 for validator in validators:
-                    result = validator.check_data(data_matrix, colnames=columns)
-                    tr = TableResult(validator=validator, impl=implname, result=result, parameters=param)
+                    result, message = validator.check_data(data_matrix, colnames=columns)
+                    tr = TableResult(validator=validator, impl=implname, result=result, parameters=param, message=message)
                     results.append(tr)
 
         impl_names = set( [tr.impl for tr in results] )
@@ -186,7 +187,7 @@ def check_scenario(scenario_file):
             print '   * For Implementation %s' % impl
             for ip in impl_results:
                 res_str = 'PASSED' if ip.result  else 'FAILED'
-                print '    - %s : %s for %s' % (res_str, ip.validator.to_str().ljust(10), ip.parameters)
+                print '    - %s : %s %s for %s' % (res_str, ip.validator.to_str().ljust(10), ip.message, ip.parameters)
 
     pylab.show()
 

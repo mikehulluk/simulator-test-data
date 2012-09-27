@@ -40,25 +40,101 @@ base_filename = scenario001_A<A>_C<C>_I<I>_GLK<GLK>_EREV<EREV>_VS<VS>_result_
 
 eps = 0.001
 
+
+
+
+
+some_calculations = """
+ Area-Density Calculations:
+ -----------------------------
+ 10,000um2  = (100um x 100um) = (0.1mm * 0.1mm) = (10^-2cm * 10^-2cm) = 10^-4cm2 = 10^-4cm2
+ Then: 
+ 10,000um2 => 0.1e-3 cm2
+ 16,000um2 => 0.16e-3 cm2
+
+
+ Capacitances:
+ ~~~~~~~~~~~~~
+     Area  |   0.1cm2       |   0.16cm2 |
+Sp. Cap:   |----------------|-----------|
+1uF/cm2    |   0.1nF        |   0.16nF  |
+2uF/cm2    |   0.2nF        |   0.32nF  |
+
+
+Conductances
+~~~~~~~~~~~~
+     Area  |   0.1cm2             |   0.16cm2            |
+-----------|----------------------|----------------------|
+Conduct:   |
+0.3mS/cm2  |   0.03uS (33.33MOhm) |  0.048uS (29.83MOhm) |
+1.3mS/cm2  |   0.13uS (7.69MOhm)  |  0.208uS (4.81MOhm)  |
+
+
+TimeConstants
+~~~~~~~~~~~~~
+tau = R*C = C/G
+e.g.  (1.0 uF/cm2) / (0.3 mS/cm2)
+    = 1.0 * (1e-6) / ( 0.3 * (1e-3)) 
+    = 1.0/0.3 * ms
+
+   Cond    |      0.3mS/cm2       |   1.3mS/cm2          |
+-----------|----------------------|----------------------|
+Cap:       |                      |                      |
+1.0uF/cm2  |     3.333ms          |   0.77ms             |
+2.0uF/cm2  |     6.666ms          |   1.44ms             |
+
+# From Wikipedia:
+"It is the time required to charge or discharge the capacitor, through the
+resistor, to 63.2 (≈ 63) percent of the difference between the initial value
+and final value. This value is derived from the mathematical constant e,
+specifically"
+
+
+# Responses to injected currents:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   Area    |    Conductance   |   Resistance  |   DeltaV of I=120pA | DeltaV for 200pA |
+-----------|------------------|---------------|---------------------|------------------| 
+10,000um2  |   0.3mS/cm2      |   33.33MOhm   |  4.00mV             |  6.66mV          |
+10,000um2  |   1.3mS/cm2      |    7.69MOhm   |  0.92mV             |  1.53mV          |
+16,000um2  |   0.3mS/cm2      |   29.83MOhm   |  3.48mV             |  6.00mV          |
+16,000um2  |   1.3mS/cm2      |    4.81MOhm   |  0.577mV            |  0.96mV          |
+
+
+
+
+
+
+
+"""
+
+
+
+
+
 expectations = """
 
-|A       | C        |I       | GLK     | EREV   |VS      | V[90:99].mean | V[240:249].mean  | V.max | v.min |
-|--------|----------|--------|---------|--------|--------|---------------|------------------|-------|-------|
+|A       | C        |I       | GLK     | EREV   |VS       | V[90:99].mean | V[240:249].mean  | V.max | V.min | V[102] |
+|--------|----------|--------|---------|--------|---------|---------------|------------------|-------|-------|--------|
+
 # NO Injected Current:
 # --------------------
 # If there is no injected current, and initial voltage and reversal of leak are the same, then 
 # voltage should be fixed:
-|10000    | 1.0      |0       | 1.0     |-51     |-51     |-51            | -51              | -51   | -51   |
-|10000    | 1.0      |0       | 1.0     |-31     |-31     |-31            | -31              | -31   | -31   |
+|10000    | 1.0      |0       | 0.3     |-51     |  -51   |-51            | -51              | -51   | -51  |  -51   |
+|10000    | 1.0      |0       | 0.3     |-31     |  -31   |-31            | -31              | -31   | -31  |  -31   |
 # If there is a difference between the start voltage and the resting potential, then we should 
 # decay to the reversal potential of leak
-|10000    | 1.0      |0       | 1.0     |-51     |-31     |-51            | -51              | -51   | -31   |
-|10000    | 1.0      |0       | 1.0     |-31     |-51     |-31            | -31              | -51   | -31   |
+|10000    | 1.0      |0       | 0.3     |-51     |  -31   |-51            | -51              | -51   | -31  |  -51   |
+|10000    | 1.0      |0       | 0.3     |-31     |  -51   |-31            | -31              | -51   | -31  |  -31   |
 
 
-# 100 pA of Injected Current:
+# With Injected Current:
 # ----------------------------
-|10000    | 1.0      |100     | 0.1     |-51     |-31     |   4           | ?                | ?     | ?     |
+# A=10000um2, GLK = 0.3mS/cm2  C = 1.0uF/cm2: {tau=3.33m.t=2} -> (1-exp(-t/tau)) = 45.119%
+|10000    | 1.0      | 120    | 0.3     | -51    |-51     | -51           | -47.00           | -47.0 | -51  | -49.195 |
+|10000    | 1.0      | 200    | 0.3     | -51    |-51     | -51           | -44.33           | -44.3 | -51  | -48     |
+|10000    | 1.0      | 120    | 0.3     | -31    |-31     | -31           | -27.00           | -27.0 | -31  | -29.195 |
+|10000    | 1.0      | 200    | 0.3     | -31    |-31     | -31           | -24.33           | -24.3 | -31  | -28     |
 
  """
 
