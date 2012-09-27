@@ -55,7 +55,8 @@ def check_all_scenarios():
     print 'Comparing Scenarios'
     for scenario_file in sorted( os.listdir(scenario_path) ):
         # Only first for now:
-        if not 'scenario001' in scenario_file:
+        #if not 'scenario001' in scenario_file:
+        if not 'scenario020' in scenario_file:
             continue
         check_scenario( os.path.join( scenario_path, scenario_file ) )
 
@@ -217,24 +218,25 @@ def check_scenario(scenario_file):
             ax.legend()
 
 
+    if validators:
+        for impl, param_filename_dict in impl_param_filename_dict.iteritems():
+            print '   * Checking Implementation Values against tables: %s' %impl
+            for parameter, _validators in validators.iteritems():
+                if not parameter in param_filename_dict:
+                    print bcolors.WARNING, '        * Missing Parameters:',parameter, bcolors.ENDC
+                    continue
 
-    for impl, param_filename_dict in impl_param_filename_dict.iteritems():
-        print '   * Checking Implementation Values against tables: %s' %impl
-        for parameter, _validators in validators.iteritems():
-            if not parameter in param_filename_dict:
-                print bcolors.WARNING, '        * Missing Parameters:',parameter, bcolors.ENDC
-                continue
-
-            print '       * Checking against parameters:',parameter
-            # Load the data:
-            data = np.loadtxt(param_filename_dict[parameter])
-            for validator in _validators:
-                result, message = validator.check_data(data, colnames=columns)
-                print (bcolors.FAIL if not result else bcolors.OKGREEN),
-                print  '           - ', result, message, bcolors.ENDC
-                #print bcolors.ENDC,
+                print '       * Checking against parameters:',parameter
+                # Load the data:
+                data = np.loadtxt(param_filename_dict[parameter])
+                for validator in _validators:
+                    result, message = validator.check_data(data, colnames=columns)
+                    print (bcolors.FAIL if not result else bcolors.OKGREEN),
+                    print  '           - ', result, message, bcolors.ENDC
+                    #print bcolors.ENDC,
 
 
+    pylab.show()
 
 
 

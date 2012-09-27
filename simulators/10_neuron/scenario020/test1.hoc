@@ -1,0 +1,90 @@
+load_file("nrngui.hoc")
+
+// Set from the commandline:
+GBAR = 10
+TCLOSE = 5
+EREV=0
+
+create soma
+access soma
+soma insert pas
+
+length = 100
+soma {
+    L = length
+    diam = 1000 / (length * PI)
+
+    //(NEURON works in S/cm2 and mV (LK_G is in mS/cm2) )
+    g_pas = 0.1 / 1000
+    e_pas = -50
+}
+
+objref syn
+soma syn = new ExpSyn(0.5)
+syn.tau = TCLOSE
+syn.e = EREV
+
+
+
+objref nc, nil
+nc = new NetCon(nil, syn)
+//NEURON deal in uS, we are using pS
+nc.weight=GBAR / 1e6
+
+
+proc initspikes(){
+   soma.v = -50
+   nc.event(100) 
+}
+
+
+// Setup the recording:
+objref vecv, vect, vec_syni, vec_syng
+
+vect = new Vector()
+vecv = new Vector()
+vec_syni = new Vector()
+vec_syng = new Vector()
+
+vect.record(&t)
+vecv.record(&soma.v(0.5))
+vec_syni.record(&syn.i)
+vec_syng.record(&syn.g)
+
+soma.v(0.5) = -31
+//#soma.V = -31
+//v(soma) = -31
+// Run the simulation:
+tstop = 350
+
+
+objref fih
+fih = new FInitializeHandler("initspikes()")
+
+run() 
+
+
+strdef filename
+sprint(filename,"output/scenario020_EREV%f_GBAR%f_TCLOSE%f_result_", EREV, GBAR, TCLOSE)
+
+
+
+
+////sprint(filename, "output/scenario001_A%d_C%.1f_I%d_GLK%.1f_EREV%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G, LK_EREV, VS) 
+
+// Save the data to a file:
+objref savdata
+savdata = new File()
+savdata.wopen(filename)
+savdata.printf("#t V\n")
+
+objref tempmatrix
+tempmatrix = new Matrix()
+tempmatrix.resize(vecv.size(),4)
+tempmatrix.setcol(0, vect)
+tempmatrix.setcol(1, vecv)
+tempmatrix.setcol(2, vec_syni)
+tempmatrix.setcol(3, vec_syng)
+tempmatrix.fprint(0,savdata, " %g")
+
+savdata.close()
