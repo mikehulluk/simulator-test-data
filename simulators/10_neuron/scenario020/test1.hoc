@@ -1,9 +1,14 @@
 load_file("nrngui.hoc")
 
 // Set from the commandline:
-GBAR = 10
-TCLOSE = 5
-EREV=0
+GSYN = 1
+TCLOSE = 20
+ESYN=0
+GLEAK = 0.03333
+
+// CONSTANTS
+A = 10000
+
 
 create soma
 access soma
@@ -12,30 +17,37 @@ soma insert pas
 length = 100
 soma {
     L = length
-    diam = 1000 / (length * PI)
+    diam = A / (length * PI)
+    
+    // Make the capacitance very small - so changes are immediate:
+    cm = 0.0000001
 
     //(NEURON works in S/cm2 and mV (LK_G is in mS/cm2) )
-    g_pas = 0.1 / 1000
+    g_pas = GLEAK / 1000
     e_pas = -50
 }
+
+
+objref ic
+ic = new IClamp(0.5)
+ic.amp = 33.333 * (1e-3)
+ic.dur = 20
+ic.del=50
+
 
 objref syn
 soma syn = new ExpSyn(0.5)
 syn.tau = TCLOSE
-syn.e = EREV
+syn.e = ESYN
 
 
 
 objref nc, nil
 nc = new NetCon(nil, syn)
-//NEURON deal in uS, we are using pS
-nc.weight=GBAR / 1e6
+//NEURON deal in uS, we are using nS
+nc.weight=GSYN * 1e-3
 
 
-proc initspikes(){
-   soma.v = -50
-   nc.event(100) 
-}
 
 
 // Setup the recording:
@@ -51,26 +63,37 @@ vecv.record(&soma.v(0.5))
 vec_syni.record(&syn.i)
 vec_syng.record(&syn.g)
 
-soma.v(0.5) = -31
-//#soma.V = -31
-//v(soma) = -31
+
 // Run the simulation:
 tstop = 350
+dt=0.005
 
-
+// Setup the simulation:
+proc initialise(){
+   soma.v = -50
+   nc.event(100) 
+}
 objref fih
-fih = new FInitializeHandler("initspikes()")
+fih = new FInitializeHandler("initialise()")
+
+
 
 run() 
 
 
+
+// Since our conductance and currents are measured in uS and nA, lets convert them to nS and pA
+i=0
+for i=0, vec_syni.size()-1 {
+   vec_syng.x[i] = vec_syng.x[i] * 1e3
+   vec_syni.x[i] = vec_syni.x[i] * 1e3
+}
+
+
+
 strdef filename
-sprint(filename,"output/scenario020_EREV%f_GBAR%f_TCLOSE%f_result_", EREV, GBAR, TCLOSE)
+sprint(filename,"output/scenario020_ESYN%f_GSYN%f_GLEAK%f_TCLOSE%f_result_", ESYN, GSYN, GLEAK, TCLOSE)
 
-
-
-
-////sprint(filename, "output/scenario001_A%d_C%.1f_I%d_GLK%.1f_EREV%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G, LK_EREV, VS) 
 
 // Save the data to a file:
 objref savdata
@@ -83,8 +106,8 @@ tempmatrix = new Matrix()
 tempmatrix.resize(vecv.size(),4)
 tempmatrix.setcol(0, vect)
 tempmatrix.setcol(1, vecv)
-tempmatrix.setcol(2, vec_syni)
-tempmatrix.setcol(3, vec_syng)
+tempmatrix.setcol(2, vec_syng)
+tempmatrix.setcol(3, vec_syni)
 tempmatrix.fprint(0,savdata, " %g")
 
 savdata.close()

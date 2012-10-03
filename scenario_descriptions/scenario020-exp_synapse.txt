@@ -1,14 +1,14 @@
 
 scenario_short= scenario020
-title = Scenario 020: Response of a passive cell to time synaptic input (single exponential)
+title = Response of a passive cell to alpha synapse events
 
 description = """
 In a simulation from t=0 to t=350
 Create a single compartment neuron cell1
-Add Hodge-Huxley:LK channels to cell1 with density 0.1mS/cm2 and reversalpotential -50
-- area 1000um2 initial voltage -52
- - capacitance 1.0uF/cm2
-Create an alpha synapse SYN with conductance <GBAR>  and reversalpotential <EREV> and closing time <TCLOSE> at cell1 
+Add Hodge-Huxley:LK channels to cell1 with density <GLEAK> and reversalpotential -50
+- area 1000um2 initial voltage -50
+ - capacitance 1.0 uF/cm2
+Create an alpha synapse SYN with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> at cell1 
 Drive SYN with spike times [100, 150, 150.5, 200, 200.2, 200.4]
 Record cell1.V as $V
 Record SYN.g as $SYN_G
@@ -18,18 +18,34 @@ Run the simulation
 
 [Units]
     t = ms
-    GBAR= pS
+    GLEAK=mS/cm2
     TCLOSE=ms
-    EREV=mV
+    ESYN=mV
+    GSYN=nS
     V=mV
+    SYN_G=nS
+    SYN_I=pA
 
 [Parameter Values]
-    GBAR= 10
-    TCLOSE=5,10
-    EREV=-20,0
+    GSYN=  1000, 500
+    ESYN= -20, 0
+    GLEAK= 0.03333. 14.2857
+    TCLOSE= 5,10
 
 [Output Format]
 columns = t, V, SYN_G, SYN_I
-base_filename = scenario020_EREV<EREV>_GBAR<GBAR>_TCLOSE<TCLOSE>_result_
+base_filename = scenario020_ESYN<ESYN>_GSYN<GSYN>_GLEAK<GLEAK>_TCLOSE<TCLOSE>_result
+
+
+
+[Check Values]
+
+eps = 0.10
+expectations = """
+
+| GLEAK     | GSYN  | ESYN   | TCLOSE   |  SYN_G.max | SYN_I[100.05:].min | V.max    |
+| 0.03333   | 1.00  | 0      | 20       |  1.00      | -38.46             | -38.4615 |
+
+"""
 
 
