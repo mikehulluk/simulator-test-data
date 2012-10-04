@@ -157,6 +157,7 @@ def check_scenario(scenario_file):
     # Look at all output files and find all the implementations:
     # Categorise all output files into a map impl_param_filename_dict[impl][param][filename]
     print ' -- Searching Files:'
+    print '   * %d Files Found' % len(file_list)
     impl_param_filename_dict = collections.defaultdict(dict)
     unexpected_files = []
     for filename in file_list:
