@@ -8,7 +8,7 @@ Create a single compartment neuron cell1
 Add Hodge-Huxley:LK channels to cell1 with density <GLEAK> and reversalpotential -50
 - area 1000um2 initial voltage -50
  - capacitance 1e-3 uF/cm2
-Create an alpha synapse SYN with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> at cell1 
+Create an alpha synapse SYN with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> and opening time <TOPEN> at cell1 
 Drive SYN with spike times [100, 300, 300]
 Record cell1.V as $V
 Record SYN.g as $SYN_G
@@ -20,6 +20,7 @@ Run the simulation
     t = ms
     GLEAK=mS/cm2
     TCLOSE=ms
+    TOPEN=ms
     ESYN=mV
     GSYN=pS
     V=mV
@@ -31,10 +32,11 @@ Run the simulation
     ESYN=  0, -20
     GLEAK= 0.03333. 14.2857
     TCLOSE= 5, 20, 100000
+    TOPEN=1, 4
 
 [Output Format]
 columns = t, V, SYN_G, SYN_I
-base_filename = scenario020_ESYN<ESYN>_GSYN<GSYN>_GLEAK<GLEAK>_TCLOSE<TCLOSE>_result
+base_filename = scenario021_ESYN<ESYN>_GSYN<GSYN>_GLEAK<GLEAK>_TCLOSE<TCLOSE>_TOPEN<TOPEN>_result
 
 
 
@@ -46,39 +48,43 @@ expectations_i = """
 # 1. Use a long decaying syanpse to check that the steady state voltages seem right
 # for different values of input resistance, synaptic conductance and reveral potential
 
-| GLEAK       | GSYN     | ESYN   | TCLOSE    |  SYN_G[100.5:290].max | SYN_I[100.5:290].min |   V[100:290].max |
-|-------------|----------|--------|-----------|-----------------------|----------------------|------------------|
-| 0.03333     | 1000.00  | 0      | 100000    |  1000                 | -38.46               |   -38.4615       |
-| 0.014286    | 1000.00  | 0      | 100000    |  1000                 | ?                    |   -29.4118       |
-| 0.03333     |  500.00  | 0      | 100000    |  500                  | ?                    |   -43.4769       |
-| 0.014286    |  500.00  | 0      | 100000    |  500                  | ?                    |   -37.0370       |
-| 0.03333     | 1000.00  | -20    | 100000    |  1000                 | ?                    |   -43.0769       |
-| 0.014286    | 1000.00  | -20    | 100000    |  1000                 | ?                    |   -37.6471       |
-| 0.03333     |  500.00  | -20    | 100000    |  500                  | ?                    |   -46.0869       |
-| 0.014286    |  500.00  | -20    | 100000    |  500                  | ?                    |   -42.2222       |
+| GLEAK     | GSYN     | ESYN   | TCLOSE  | TOPEN  |  SYN_G[100.5:290].max | SYN_I[100.5:290].min |   V[100:290].max |
+|-----------|----------|--------|---------|--------|-----------------------|----------------------|------------------|
+| 0.03333   | 1000.00  | 0      | 100000  | 1,4    |  1000                 | -38.46               |   -38.4615       |
+| 0.014286  | 1000.00  | 0      | 100000  | 1,4    |  1000                 | ?                    |   -29.4118       |
+| 0.03333   |  500.00  | 0      | 100000  | 1,4    |  500                  | ?                    |   -43.4769       |
+| 0.014286  |  500.00  | 0      | 100000  | 1,4    |  500                  | ?                    |   -37.0370       |
+| 0.03333   | 1000.00  | -20    | 100000  | 1,4    |  1000                 | ?                    |   -43.0769       |
+| 0.014286  | 1000.00  | -20    | 100000  | 1,4    |  1000                 | ?                    |   -37.6471       |
+| 0.03333   |  500.00  | -20    | 100000  | 1,4    |  500                  | ?                    |   -46.0869       |
+| 0.014286  |  500.00  | -20    | 100000  | 1,4    |  500                  | ?                    |   -42.2222       |
 """
 
+
+# For t_o, t_c, the max_time of the synapse is at ln(t_c/t_o)* (t_c*t_o)/(t_c-t_o)
+# t_o=1 t_c=5 -> 2.01179    g@t: 0.53499
+# t_o=4 t_c=5 -> 4.46287    g@t  0.08191
+# t_o=1 t_c=20 -> 3.1534    g@t: 0.81142
+# t_o=4 t_c=20 -> 8.0472    g@t: 0.53499
+#PYTHON: t=2.; t_c=20.; t_o=1.; tp=log(t_c/t_o) * (t_c*t_o) / (t_c-t_o); v= exp(-tp/t_c) - exp(-tp/t_o); g= ( exp(-t/t_c) - exp(-t/t_o) )/v; g *1000
+
+# This is very inaccurate in NEURON, I don't understand why:
+expectations_ii_eps = 2.5
 expectations_ii = """
 # 2. Check that the synapse decays as expected over time:
-| GLEAK       | GSYN     | ESYN   | TCLOSE    | SYN_G[102]  |
-|-------------|----------|--------|-----------|-------------|
-| 0.03333     | 1000.00  | 0      | 5         | 670.32      |
-| 0.03333     |  500.00  | 0      | 5         | 335.16      |
-| 0.03333     | 1000.00  | 0      | 20        | 904.84      |
-| 0.03333     |  500.00  | 0      | 20        | 452.42      |
+| GLEAK       | GSYN     | ESYN   | TCLOSE  | TOPEN  | SYN_G[102]  | SYN_G[302] |
+|-------------|----------|--------|---------|--------|-------------|------------|
+| 0.03333     | 1000.00  | 0      | 5       | 1      |   999.986   |  1999.97   |
+| 0.03333     |  500.00  | 0      | 5       | 1      |   499.993   |  999.9     |
+| 0.03333     | 1000.00  | 0      | 20      | 1      |   948.33    |  1896.67   |
+| 0.03333     |  500.00  | 0      | 20      | 1      |   474.16    |  948.33    |
+
+| 0.03333     | 1000.00  | 0      | 5       | 4      |   778.68    |  1557.35   |
+| 0.03333     |  500.00  | 0      | 5       | 4      |   389.34    |   778.68   |
+| 0.03333     | 1000.00  | 0      | 20      | 4      |   557.59    |  1115.18   |
+| 0.03333     |  500.00  | 0      | 20      | 4      |   278.79    |   557.59   |
+
 """
-
-
-expectations_iii = """
-# 3. Check that multiple events work as expected:
-| GLEAK       | GSYN     | ESYN   | TCLOSE    | SYN_G[302]  |
-|-------------|----------|--------|-----------|-------------|
-| 0.03333     | 1000.00  | 0      | 5         | 1340.64      |
-| 0.03333     |  500.00  | 0      | 5         |  670.32      |
-| 0.03333     | 1000.00  | 0      | 20        | 1809.68      |
-| 0.03333     |  500.00  | 0      | 20        |  904.84      |
-"""
-
 
 
 

@@ -56,7 +56,7 @@ def check_all_scenarios():
     for scenario_file in sorted( os.listdir(scenario_path) ):
         # Only first for now:
         #if not 'scenario001' in scenario_file:
-        if not 'scenario020' in scenario_file:
+        if not 'scenario021' in scenario_file:
             continue
         check_scenario( os.path.join( scenario_path, scenario_file ) )
 
@@ -95,18 +95,27 @@ def parse_table(table_str, ParamTuple, variables, eps):
 
     # Construct the validations:
     validations = collections.defaultdict(list)
-    for line in data:
-        # Build a parameter tuple of the input:
-        paramtuple = ParamTuple( **dict([ (var,decimal.Decimal(line[input_table_indices[var]])) for var in table_inputs ] ) )
+    for rawline in data:
 
-        # Build functors to evaluate the output:
-        for output in table_outputs:
-            value = line[output_table_indices[output]]
-            if value is None:
-                continue
-            value = float(value)
-            valiation = TableTestFunctor(test_expr=output, expected_value=value, eps=eps)
-            validations[paramtuple].append(valiation)
+        # We can have commas in the input, so we need to split bby commas:
+        for line in itertools.product(*[ (l.split(",") if l is not None else [None]) for l in rawline ]):
+
+            #line = rawline
+
+            #print line
+            #assert False
+            # Build a parameter tuple of the input:
+            #print line
+            paramtuple = ParamTuple( **dict([ (var,decimal.Decimal(line[input_table_indices[var]])) for var in table_inputs ] ) )
+
+            # Build functors to evaluate the output:
+            for output in table_outputs:
+                value = line[output_table_indices[output]]
+                if value is None:
+                    continue
+                value = float(value)
+                valiation = TableTestFunctor(test_expr=output, expected_value=value, eps=eps)
+                validations[paramtuple].append(valiation)
 
     return validations
 
@@ -196,11 +205,12 @@ def check_scenario(scenario_file):
         print ' -- Building Validation Table'
         eps = float( config['Check Values']['eps'] )
 
-        expectation_tables = [ k for k in config['Check Values'] if k.startswith('expect') ]
+        expectation_tables = [ k for k in config['Check Values'] if k.startswith('expect') and not k.endswith('_eps') ]
         for tbl_name in expectation_tables:
+            local_eps = float( config['Check Values'].get(tbl_name+'_eps') or eps )
             print '    * Loading expectations:', k
             table_str = config['Check Values'][tbl_name]
-            vals = parse_table(table_str, ParamTuple, variables=expected_variables,eps=eps)
+            vals = parse_table(table_str, ParamTuple, variables=expected_variables,eps=local_eps)
 
             # Merge into to dictionary:
             for k, v in vals.iteritems():
@@ -250,7 +260,8 @@ def check_scenario(scenario_file):
                     #print bcolors.ENDC,
 
 
-    pylab.show()
+
+    #pylab.show()
 
 
 

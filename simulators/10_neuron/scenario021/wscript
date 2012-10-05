@@ -1,0 +1,42 @@
+
+import os
+import waf_util
+import subprocess
+from subprocess import check_call as call
+
+@waf_util.chdirdecorator
+def cleanup(ctx):
+    waf_util.rmtree('output')
+
+@waf_util.chdirdecorator
+def generate(ctx):
+
+    waf_util.ensure_output_links_setup()
+
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=1 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=1 -c ESYN=0 -c GLEAK=0.014286 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=1 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=1 -c ESYN=0 -c GLEAK=0.014286 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=1 -c ESYN=-20 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=1 -c ESYN=-20 -c GLEAK=0.014286 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=1 -c ESYN=-20 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=1 -c ESYN=-20 -c GLEAK=0.014286 scenario021.hoc'.split())
+
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=4 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=4 -c ESYN=0 -c GLEAK=0.014286 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=4 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=4 -c ESYN=0 -c GLEAK=0.014286 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=4 -c ESYN=-20 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c TOPEN=4 -c ESYN=-20 -c GLEAK=0.014286 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=4 -c ESYN=-20 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000  -c TOPEN=4 -c ESYN=-20 -c GLEAK=0.014286 scenario021.hoc'.split())
+    
+
+    call('nrniv -c GSYN=1000 -c TCLOSE=5  -c TOPEN=1 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=20 -c TOPEN=1 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500  -c TCLOSE=5  -c TOPEN=1 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500  -c TCLOSE=20 -c TOPEN=1 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=5  -c TOPEN=4 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=20 -c TOPEN=4 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500  -c TCLOSE=5  -c TOPEN=4 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
+    call('nrniv -c GSYN=500  -c TCLOSE=20 -c TOPEN=4 -c ESYN=0 -c GLEAK=0.03333 scenario021.hoc'.split())
