@@ -133,7 +133,7 @@ def check_scenario(scenario_file):
     re_vars = re.compile(r"""<[A-Za-z0-9_]*>""")
     expected_variables = re_vars.findall(output_filename)
     expected_variables = [ exp_var[1:-1] for exp_var in expected_variables]
-    expected_filename_regex = re_vars.sub(r'(-?[0-9]*(?:\.[0-9]*)?)', output_filename) 
+    expected_filename_regex = re_vars.sub(r'(-?[0-9]*(?:\.[0-9]*)?)', output_filename)
     expected_filename_regex = '(?:.*/)?' + expected_filename_regex + '(.*)'
 
     print ' -- Parameters', parameters.keys()
@@ -173,6 +173,11 @@ def check_scenario(scenario_file):
     for impl,params in impl_param_filename_dict.iteritems():
         print '    * %d files found for %s'% (len(params), impl)
     print '    * %d unexpected files found' % len(unexpected_files)
+
+    print bcolors.FAIL,
+    for unexpected_file in unexpected_files:
+        print '      > ', unexpected_file
+    print bcolors.ENDC,
 
 
     # Build an dictionary mapping {params -> {impl: filename, impl:filename} }

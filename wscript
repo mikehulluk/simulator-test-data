@@ -23,12 +23,8 @@ def generate(ctx):
     ensure_exists('output/scenario001')
     ensure_exists('output/scenario020')
 
-
-
     # Call the simulators:
     ctx.recurse('simulators')
-
-
 
 def cleanup(ctx):
     ctx.recurse('simulators')

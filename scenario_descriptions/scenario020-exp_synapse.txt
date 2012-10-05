@@ -30,7 +30,7 @@ Run the simulation
     GSYN=  1000, 500
     ESYN= -20, 0
     GLEAK= 0.03333. 14.2857
-    TCLOSE= 5,10
+    TCLOSE= 5, 20, 10000
 
 [Output Format]
 columns = t, V, SYN_G, SYN_I
@@ -44,7 +44,7 @@ eps = 0.10
 expectations = """
 
 | GLEAK     | GSYN  | ESYN   | TCLOSE   |  SYN_G.max | SYN_I[100.05:].min | V.max    |
-| 0.03333   | 1.00  | 0      | 20       |  1.00      | -38.46             | -38.4615 |
+| 0.03333   | 1.00  | 0      | 10000    |  1.00      | -38.46             | -38.4615 |
 
 """
 
@@ -55,7 +55,7 @@ expectations = """
 
 
 
-"""
+balh = """
 Conductance of the cell
 ~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -22,7 +22,7 @@ def ensure_output_links_setup():
     """ Assumes that we are in the directory already """
 
     scenario_name = os.path.split( os.getcwd() )[-1]
-    if not os.path.exists('output/'): #and not os.path.lexists('output/'):
+    if not os.path.exists('output'): #and not os.path.lexists('output/'):
         os.symlink('../../../output/%s/' %scenario_name, 'output' )
     if not os.path.exists('output/'):
         raise IOError("Can't find file: %s" %'')

@@ -1,9 +1,9 @@
 load_file("nrngui.hoc")
 
 // Set from the commandline:
-GBAR = 10
-TCLOSE = 5
-EREV=0
+GSYN = 10
+TCLOSE = 10000
+ESYN=0
 
 create soma
 access soma
@@ -22,14 +22,14 @@ soma {
 objref syn
 soma syn = new ExpSyn(0.5)
 syn.tau = TCLOSE
-syn.e = EREV
+syn.e = ESYN
 
 
 
 objref nc, nil
 nc = new NetCon(nil, syn)
 //NEURON deal in uS, we are using pS
-nc.weight=GBAR / 1e6
+nc.weight=GSYN / 1e6
 
 
 proc initspikes(){
@@ -65,12 +65,12 @@ run()
 
 
 strdef filename
-sprint(filename,"output/scenario020_EREV%f_GBAR%f_TCLOSE%f_result_", EREV, GBAR, TCLOSE)
+sprint(filename,"output/scenario020_ESYN%f_GSYN%f_TCLOSE%f_result_NEURONHOC", ESYN, GSYN, TCLOSE)
 
 
 
 
-////sprint(filename, "output/scenario001_A%d_C%.1f_I%d_GLK%.1f_EREV%2.1f_VS%2.1f_result_NEURONHOC.txt", A, C, I, LK_G, LK_EREV, VS) 
+
 
 // Save the data to a file:
 objref savdata
