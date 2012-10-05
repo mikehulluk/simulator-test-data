@@ -31,6 +31,7 @@ class TableTestFunctor(object):
         dt = 0.00000001
 
         var_name = self.condition_info.src_variable
+        #print self.condition_info
         assert var_name in colnames, "Can't find variable: %s" % var_name
         col_index = colnames.index(var_name)
 

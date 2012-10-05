@@ -1,9 +1,14 @@
 load_file("nrngui.hoc")
 
 // Set from the commandline:
-GSYN = 10
-TCLOSE = 10000
-ESYN=0
+//GSYN = 1000
+//TCLOSE = 100000
+//ESYN= 0
+//GLEAK = 0.03333
+
+
+// CONSTANTS
+A = 10000
 
 create soma
 access soma
@@ -12,10 +17,10 @@ soma insert pas
 length = 100
 soma {
     L = length
-    diam = 1000 / (length * PI)
-
-    //(NEURON works in S/cm2 and mV (LK_G is in mS/cm2) )
-    g_pas = 0.1 / 1000
+    diam = A / (length * PI)
+    cm =1.0 * (1e-3)
+    //(NEURON works in S/cm2 and mV (G_LEAK is in mS/cm2) )
+    g_pas = GLEAK / 1000
     e_pas = -50
 }
 
@@ -35,6 +40,8 @@ nc.weight=GSYN / 1e6
 proc initspikes(){
    soma.v = -50
    nc.event(100) 
+   nc.event(300) 
+   nc.event(300) 
 }
 
 
@@ -60,17 +67,24 @@ tstop = 350
 
 objref fih
 fih = new FInitializeHandler("initspikes()")
+cvode.atol(1e-12)
+cvode.rtol(1e-12)
 
 run() 
 
 
+
+
+for i=0, vec_syni.size()-1 {
+    // NEURON works in nA and uS, we want pA and pS, so downscale by 1e3 and 1e6
+    vec_syni.x[i] = vec_syni.x[i] * (1e3)
+    vec_syng.x[i] = vec_syng.x[i] * (1e6) 
+}
+
+
+
 strdef filename
-sprint(filename,"output/scenario020_ESYN%f_GSYN%f_TCLOSE%f_result_NEURONHOC", ESYN, GSYN, TCLOSE)
-
-
-
-
-
+sprint(filename,"output/scenario020_ESYN%lf_GSYN%lf_GLEAK%lf_TCLOSE%lf_result_NEURONHOC", ESYN, GSYN, GLEAK, TCLOSE)
 
 // Save the data to a file:
 objref savdata
@@ -83,8 +97,8 @@ tempmatrix = new Matrix()
 tempmatrix.resize(vecv.size(),4)
 tempmatrix.setcol(0, vect)
 tempmatrix.setcol(1, vecv)
-tempmatrix.setcol(2, vec_syni)
-tempmatrix.setcol(3, vec_syng)
+tempmatrix.setcol(2, vec_syng)
+tempmatrix.setcol(3, vec_syni)
 tempmatrix.fprint(0,savdata, " %g")
 
 savdata.close()

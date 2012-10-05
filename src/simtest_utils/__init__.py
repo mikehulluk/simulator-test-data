@@ -174,10 +174,8 @@ def check_scenario(scenario_file):
         print '    * %d files found for %s'% (len(params), impl)
     print '    * %d unexpected files found' % len(unexpected_files)
 
-    print bcolors.FAIL,
     for unexpected_file in unexpected_files:
-        print '      > ', unexpected_file
-    print bcolors.ENDC,
+        print bcolors.FAIL, '      > ', unexpected_file, bcolors.ENDC,
 
 
     # Build an dictionary mapping {params -> {impl: filename, impl:filename} }
@@ -192,13 +190,22 @@ def check_scenario(scenario_file):
             param_impl_filename_dict[param][impl] = impl_param_filename_dict[impl][param]
 
     # Parameter Evaluators:
-    validators = None
+    validators = {}
     # Look at the expect-values table:
     if 'Check Values' in config:
         print ' -- Building Validation Table'
         eps = float( config['Check Values']['eps'] )
-        table_str = config['Check Values']['expectations']
-        validators = parse_table(table_str, ParamTuple, variables=expected_variables,eps=eps)
+
+        expectation_tables = [ k for k in config['Check Values'] if k.startswith('expect') ]
+        for tbl_name in expectation_tables:
+            print '    * Loading expectations:', k
+            table_str = config['Check Values'][tbl_name]
+            vals = parse_table(table_str, ParamTuple, variables=expected_variables,eps=eps)
+
+            # Merge into to dictionary:
+            for k, v in vals.iteritems():
+                validators[k] = validators.get(k,[]) + v
+
 
 
     # Do the output:
@@ -222,6 +229,7 @@ def check_scenario(scenario_file):
             ax.set_xmargin(0.05)
             ax.set_ymargin(0.05)
             ax.legend()
+            ax.set_ylabel( columns[i+1] )
 
 
     if validators:

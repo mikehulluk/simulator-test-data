@@ -80,7 +80,7 @@ def p_expression_output_expr2(p):
 
 def p_expression_output_expr3(p):
     'output_expr : array_name LSQBRACKET NUMBER RSQBRACKET'
-    p[0] = TableOutputExpr(src_variable=p[1][0],
+    p[0] = TableOutputExpr(src_variable=p[1],
                            slice_ = [None,None],
                                function = ['at', (p[3],) ])
 

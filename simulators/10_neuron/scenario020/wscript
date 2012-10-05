@@ -13,4 +13,16 @@ def generate(ctx):
 
     waf_util.ensure_output_links_setup()
 
-    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=120 scenario020.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c ESYN=0 -c GLEAK=0.03333 scenario020.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c ESYN=0 -c GLEAK=0.014286 scenario020.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000 -c  ESYN=0 -c GLEAK=0.03333 scenario020.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000 -c  ESYN=0 -c GLEAK=0.014286 scenario020.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c ESYN=-20 -c GLEAK=0.03333 scenario020.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=100000 -c ESYN=-20 -c GLEAK=0.014286 scenario020.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000 -c  ESYN=-20 -c GLEAK=0.03333 scenario020.hoc'.split())
+    call('nrniv -c GSYN=500 -c TCLOSE=100000 -c  ESYN=-20 -c GLEAK=0.014286 scenario020.hoc'.split())
+
+    call('nrniv -c GSYN=1000 -c TCLOSE=5 -c ESYN=0 -c GLEAK=0.03333 scenario020.hoc'.split())
+    call('nrniv -c GSYN=1000 -c TCLOSE=20 -c ESYN=0 -c GLEAK=0.03333 scenario020.hoc'.split())
+    call('nrniv -c GSYN=500  -c TCLOSE=5 -c ESYN=0 -c GLEAK=0.03333 scenario020.hoc'.split())
+    call('nrniv -c GSYN=500  -c TCLOSE=20 -c ESYN=0 -c GLEAK=0.03333 scenario020.hoc'.split())
