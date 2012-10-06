@@ -68,7 +68,7 @@ expectations_i = """
 # t_o=4 t_c=20 -> 8.0472    g@t: 0.53499
 #PYTHON: t=2.; t_c=20.; t_o=1.; tp=log(t_c/t_o) * (t_c*t_o) / (t_c-t_o); v= exp(-tp/t_c) - exp(-tp/t_o); g= ( exp(-t/t_c) - exp(-t/t_o) )/v; g *1000
 
-# This is very inaccurate in NEURON, I don't understand why:
+# This seems very inaccurate in NEURON, I don't understand why:
 expectations_ii_eps = 2.5
 expectations_ii = """
 # 2. Check that the synapse decays as expected over time:
@@ -83,7 +83,6 @@ expectations_ii = """
 | 0.03333     |  500.00  | 0      | 5       | 4      |   389.34    |   778.68   |
 | 0.03333     | 1000.00  | 0      | 20      | 4      |   557.59    |  1115.18   |
 | 0.03333     |  500.00  | 0      | 20      | 4      |   278.79    |   557.59   |
-
 """
 
 

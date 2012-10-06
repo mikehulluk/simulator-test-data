@@ -1,0 +1,65 @@
+
+scenario_short= scenario075
+title = Response of two passive cells connected via a gap junction to step current injections
+
+
+description = """
+In a simulation from t=0 to t=350
+Create a single compartment neuron cell1
+Add Hodge-Huxley:LK channels to cell1 with density <GLEAK1> and reversalpotential -50
+ - area 1000um2 initial voltage -50
+ - capacitance 1 uF/cm2
+
+Create a single compartment neuron cell2
+Add Hodge-Huxley:LK channels to cell2 with density <GLEAK2> and reversalpotential -50
+ - area 1000um2 initial voltage -50
+ - capacitance 1 uF/cm2
+
+Create an gap junction gj  with resistance <RGJ1> between cell1 and cell2
+
+Inject step current of <IINJ> into cell1 from t=100ms to t=300ms 
+Record cell1.V as $V1
+Record cell1.V as $V2
+Run the simulation
+"""
+
+
+[Units]
+    t = ms
+    GLEAK1=mS/cm2
+    GLEAK2=mS/cm2
+    V1=mV
+    V2=mV
+    RGJ1=MOhm 
+    IINJ=nA
+
+[Parameter Values]
+    GLEAK1
+    GLEAK2
+    RGJ1
+    IINJ
+
+[Output Format]
+columns = t, V1, V2
+base_filename = scenario075_GLEAK1<GLEAK1>_GLEAK2<GLEAK2>_RGJ1<RGJ1>_IINJ<IINJ>_result_
+
+
+#[Check Values]
+#
+#eps = 0.05
+#
+#expectations_i = """
+## 1. Use a long decaying syanpse to check that the steady state voltages seem right
+## for different values of input resistance, synaptic conductance and reveral potential
+#
+#| GLEAK     | GSYN     | ESYN   | TCLOSE  | TOPEN  |  SYN_G[100.5:290].max | SYN_I[100.5:290].min |   V[100:290].max |
+#|-----------|----------|--------|---------|--------|-----------------------|----------------------|------------------|
+#| 0.03333   | 1000.00  | 0      | 100000  | 1,4    |  1000                 | -38.46               |   -38.4615       |
+#| 0.014286  | 1000.00  | 0      | 100000  | 1,4    |  1000                 | ?                    |   -29.4118       |
+#| 0.03333   |  500.00  | 0      | 100000  | 1,4    |  500                  | ?                    |   -43.4769       |
+#| 0.014286  |  500.00  | 0      | 100000  | 1,4    |  500                  | ?                    |   -37.0370       |
+#| 0.03333   | 1000.00  | -20    | 100000  | 1,4    |  1000                 | ?                    |   -43.0769       |
+#| 0.014286  | 1000.00  | -20    | 100000  | 1,4    |  1000                 | ?                    |   -37.6471       |
+#| 0.03333   |  500.00  | -20    | 100000  | 1,4    |  500                  | ?                    |   -46.0869       |
+#| 0.014286  |  500.00  | -20    | 100000  | 1,4    |  500                  | ?                    |   -42.2222       |
+#"""

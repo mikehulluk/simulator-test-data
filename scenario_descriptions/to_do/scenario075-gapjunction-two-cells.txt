@@ -1,6 +1,0 @@
-
-scenario_short= scenario075
-title = Response of two passive cell connected via a gap junction to 
-
-
-
