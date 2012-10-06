@@ -20,6 +20,7 @@ def rmtree(location):
 
 def ensure_output_links_setup():
     """ Assumes that we are in the directory already """
+    assert False, 'Deprecated'
 
     return
     scenario_name = os.path.split( os.getcwd() )[-1]

@@ -6,14 +6,14 @@ title = Response of two passive cells connected via a gap junction to step curre
 description = """
 In a simulation from t=0 to t=350
 Create a single compartment neuron cell1
-Add Hodge-Huxley:LK channels to cell1 with density <GLEAK1> and reversalpotential -50
- - area 1000um2 initial voltage -50
- - capacitance 1 uF/cm2
+Add Hodge-Huxley:LK channels to cell1 with density <GLEAK1> and reversalpotential 0
+ - area 5000um2 initial voltage 0
+ - capacitance 0.1 uF/cm2
 
 Create a single compartment neuron cell2
-Add Hodge-Huxley:LK channels to cell2 with density <GLEAK2> and reversalpotential -50
- - area 1000um2 initial voltage -50
- - capacitance 1 uF/cm2
+Add Hodge-Huxley:LK channels to cell2 with density <GLEAK2> and reversalpotential 0
+ - area 20000um2 initial voltage 0
+ - capacitance 0.1 uF/cm2
 
 Create an gap junction gj  with resistance <RGJ1> between cell1 and cell2
 
@@ -31,20 +31,72 @@ Run the simulation
     V1=mV
     V2=mV
     RGJ1=MOhm 
-    IINJ=nA
+    IINJ=pA
 
 [Parameter Values]
-    GLEAK1
-    GLEAK2
-    RGJ1
-    IINJ
+    GLEAK1 = 0.06666, 0.02857
+    GLEAK2 =  0.01, 0.0025
+    RGJ1 = 100, 1000
+    IINJ = 100, 200
 
 [Output Format]
 columns = t, V1, V2
 base_filename = scenario075_GLEAK1<GLEAK1>_GLEAK2<GLEAK2>_RGJ1<RGJ1>_IINJ<IINJ>_result_
 
 
-#[Check Values]
+[Check Values]
+
+eps = 0.05
+
+workings = """
+GLEAK1,2 Conductances/Resistances:
+  * 300MOhm over surface-area of 5000um2 -> 0.06666mS/cm2
+  * 700MOhm over surface-area of 5000um2 -> 0.02857mS/cm2
+  * 500MOhm over surface area of 20000um2 -> 0.01mS/cm2
+  * 2000MOhm over surface area of 20000um2 -> 0.0025mS/cm2
+
+For RGJ=100MOhm
+
+
+
+"""
+
+
+expectations_i = """
+
+| GLEAK1   | GLEAK2   | RGJ1   | IINJ  |  V1[340:349].mean  | V2[340:349].mean  |
+|----------|----------|--------|-------|--------------------|-------------------|
+| 0.06666  | 0.01     | 100    | 100   | 20                 |  16.6666          |
+| 0.06666  | 0.0025   | 100    | 100   | 26.25              |  25               |
+| 0.02857  | 0.01     | 100    | 100   | 32.31              |  26.92            |
+| 0.02857  | 0.0025   | 100    | 100   | 52.5               |  50               |
+
+# Now double current injections:
+| 0.06666  | 0.01     | 100    | 200   | 40                 |  33.3333          |
+| 0.06666  | 0.0025   | 100    | 200   | 52.5               |  50               |
+| 0.02857  | 0.01     | 100    | 200   | 64.62              |  53.84            |
+| 0.02857  | 0.0025   | 100    | 200   | 105                |  100              |
+
+"""
+
+
+expectations_ii = """
+| GLEAK1   | GLEAK2   | RGJ1   | IINJ   |  V1[340:349].mean    | V2[340:349].mean   |
+|----------|----------|--------|--------|----------------------|--------------------|
+| 0.06666  | 0.01     | 1000   | 100    |     ?                |   ?                |
+| 0.06666  | 0.0025   | 1000   | 100    |     ?                |   ?                |
+| 0.02857  | 0.01     | 1000   | 100    |     ?                |   ?                |
+| 0.02857  | 0.0025   | 1000   | 100    |     ?                |   ?                |
+
+"""
+
+
+#Test Bidrectionality:
+
+
+
+
+
 #
 #eps = 0.05
 #

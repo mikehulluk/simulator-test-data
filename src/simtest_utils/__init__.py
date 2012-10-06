@@ -56,7 +56,7 @@ def check_all_scenarios():
     for scenario_file in sorted( os.listdir(scenario_path) ):
         # Only first for now:
         #if not 'scenario001' in scenario_file:
-        if not 'scenario021' in scenario_file:
+        if not 'scenario075' in scenario_file:
             continue
         check_scenario( os.path.join( scenario_path, scenario_file ) )
 
@@ -261,7 +261,7 @@ def check_scenario(scenario_file):
 
 
 
-    #pylab.show()
+    pylab.show()
 
 
 

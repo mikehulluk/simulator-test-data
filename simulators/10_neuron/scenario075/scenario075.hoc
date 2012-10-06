@@ -1,0 +1,154 @@
+load_file("nrngui.hoc")
+
+// Set from the commandline:
+//GLEAK1 = 0.06666
+//GLEAK2 = 0.01
+//RGJ1 = 100
+//IINJ = 100
+
+// CONSTANTS
+A1 = 5000
+A2 = 20000
+
+
+
+// CREATE CELL1
+// ------------
+create soma1
+access soma1
+soma1 insert pas
+
+length = 100
+soma1 {
+    L = length
+    diam = A1 / (length * PI)
+    cm =1.0 /10
+    //(NEURON works in S/cm2 and mV (G_LEAK is in mS/cm2) )
+    g_pas = GLEAK1 / 1000
+    e_pas = 0
+}
+
+
+// CREATE CELL2
+// ------------
+create soma2
+access soma2
+soma2 insert pas
+
+length = 100
+soma2 {
+    L = length
+    diam = A2 / (length * PI)
+    cm =1.0 /10
+    //(NEURON works in S/cm2 and mV (G_LEAK is in mS/cm2) )
+    g_pas = GLEAK2 / 1000
+    e_pas = 0
+}
+
+
+
+
+
+// Inject current into cell1:
+
+objref ic
+soma1 ic = new IClamp(0.5)
+ic.del = 100
+ic.dur = 250
+ic.amp = IINJ / 1000.
+
+
+
+
+// Gap Junction:
+objref gapobj1
+objref gapobj2
+soma1 gapobj1 = new gap()
+soma2 gapobj2 = new gap()
+
+soma1 gapobj1.loc(.5)
+soma2 gapobj2.loc(.5)
+
+setpointer gapobj1.vgap, soma2.v(0.5)
+setpointer gapobj2.vgap, soma1.v(0.5)
+gapobj1.r = RGJ1
+gapobj2.r = RGJ1
+
+
+
+
+
+
+
+
+
+// Setup the recording:
+objref  vect, vecv1, vecv2
+
+vect = new Vector()
+vecv1 = new Vector()
+vecv2 = new Vector()
+
+vect.record(&t)
+vecv1.record(&soma1.v(0.5))
+vecv2.record(&soma2.v(0.5))
+
+
+
+// Run the simulation:
+tstop = 350
+dt=0.1
+
+
+
+proc initspikes(){
+   soma1.v = 0
+   soma2.v = 0
+}
+
+objref fih
+fih = new FInitializeHandler("initspikes()")
+cvode.atol(1e-12)
+cvode.rtol(1e-12)
+
+
+
+
+
+
+
+
+
+
+
+
+
+run() 
+
+
+
+
+
+
+
+
+
+
+strdef filename
+sprint(filename,"output/scenario075_GLEAK1%lf_GLEAK2%lf_RGJ1%lf_IINJ%lf_result_NEURONHOC", GLEAK1, GLEAK2, RGJ1,IINJ)
+
+// Save the data to a file:
+objref savdata
+savdata = new File()
+savdata.wopen(filename)
+savdata.printf("#t V1 V2\n")
+
+objref tempmatrix
+tempmatrix = new Matrix()
+tempmatrix.resize(vect.size(),3)
+tempmatrix.setcol(0, vect)
+tempmatrix.setcol(1, vecv1)
+tempmatrix.setcol(2, vecv2)
+tempmatrix.fprint(0,savdata, " %g")
+
+savdata.close()
