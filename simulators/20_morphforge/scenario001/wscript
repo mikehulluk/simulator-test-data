@@ -8,12 +8,8 @@ import waf_util
 
 @waf_util.chdirdecorator
 def generate(ctx):
-    waf_util.ensure_output_links_setup()
-    #my_mf_run()
+    my_mf_run()
 
-@waf_util.chdirdecorator
-def cleanup(ctx):
-    waf_util.rmtree('output')
 
 
 

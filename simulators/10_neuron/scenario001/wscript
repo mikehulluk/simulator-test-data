@@ -4,14 +4,9 @@ import waf_util
 import subprocess
 from subprocess import check_call as call
 
-@waf_util.chdirdecorator
-def cleanup(ctx):
-    waf_util.rmtree('output')
 
 @waf_util.chdirdecorator
 def generate(ctx):
-
-    waf_util.ensure_output_links_setup()
 
     call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
     call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())

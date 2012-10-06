@@ -2,7 +2,3 @@
 
 def generate(ctx):
     ctx.recurse('scenario001')
-
-
-def cleanup(ctx):
-    ctx.recurse('scenario001')

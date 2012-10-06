@@ -15,6 +15,8 @@ import re
 import shutil
 
 
+
+
 def configure(ctx):
     pass
 
@@ -22,14 +24,16 @@ def ensure_exists(dir_name):
     if not os.path.exists(dir_name):
         os.makedirs(dir_name)
 
-def generate(ctx):
 
+
+def ensure_directory_structure_setup(ctx):
     # Make sure the output folders are setup:
     ensure_exists('output')
     ensure_exists('output/scenario001')
     ensure_exists('output/scenario020')
     ensure_exists('output/scenario021')
     ensure_exists('output/scenario075')
+
 
     # Look in all the folders in 'simulators' and make sure that thier 'output'
     # directories point to the right place:
@@ -61,14 +65,19 @@ def generate(ctx):
             os.symlink(opdir, oplink)
 
 
+
+
+
+def generate(ctx):
+    
+    ensure_directory_structure_setup(ctx)
+    
     # Call the simulators:
     ctx.recurse('simulators')
 
 def cleanup(ctx):
     shutil.rmtree('output')
-    #ctx.recurse('simulators')
-
-
+    
 
 def compare(ctx):
     import simtest_utils
