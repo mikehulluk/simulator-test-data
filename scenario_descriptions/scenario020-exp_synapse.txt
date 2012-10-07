@@ -6,9 +6,9 @@ description = """
 In a simulation from t=0 to t=350
 Create a single compartment neuron cell1
 Add Hodge-Huxley:LK channels to cell1 with density <GLEAK> and reversalpotential -50
-- area 1000um2 initial voltage -50
+- area 10000um2 initial voltage -50
  - capacitance 1e-3 uF/cm2
-Create an alpha synapse SYN with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> at cell1 
+Create an alpha synapse SYN with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> on cell1 
 Drive SYN with spike times [100, 300, 300]
 Record cell1.V as $V
 Record SYN.g as $SYN_G
@@ -29,12 +29,12 @@ Run the simulation
 [Parameter Values]
     GSYN=  500, 1000
     ESYN=  0, -20
-    GLEAK= 0.03333. 14.2857
+    GLEAK= 0.03333, 0.014286
     TCLOSE= 5, 20, 100000
 
 [Output Format]
 columns = t, V, SYN_G, SYN_I
-base_filename = scenario020_ESYN<ESYN>_GSYN<GSYN>_GLEAK<GLEAK>_TCLOSE<TCLOSE>_result
+base_filename = scenario020_ESYN<ESYN>_GSYN<GSYN>_GLEAK<GLEAK>_TCLOSE<TCLOSE>_result_
 
 
 

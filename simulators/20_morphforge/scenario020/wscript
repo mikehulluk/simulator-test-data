@@ -1,0 +1,90 @@
+
+import os
+import itertools
+import numpy as np
+
+import waf_util
+
+
+@waf_util.chdirdecorator
+def generate(ctx):
+    my_mf_run()
+
+
+
+
+
+
+def _run_sim(GSYN_in_pS, ESYN_in_mV, GLEAK_in_mS_per_cm2, TCLOSE_in_ms):
+    import morphforge.stdimports as mf
+    import morphforgecontrib.stdimports as mfc
+    from morphforge.stdimports import units as U
+
+    # The simulation:
+    env = mf.NEURONEnvironment()
+    sim = env.Simulation(cvode=True)
+    cell = sim.create_cell(area=10000 * U.um2, initial_voltage=-50*U.mV)
+    lk_chl = env.Channel(mfc.StdChlLeak,
+                    conductance=GLEAK_in_mS_per_cm2 * U.mS/U.cm2,
+                    reversalpotential=-50*U.mV )
+    cell.apply_channel(lk_chl)
+    cell.set_passive(mf.PassiveProperty.SpecificCapacitance, (1e-3) * U.uF / U.cm2)
+    
+    syn = sim.create_synapse(
+        presynaptic_mech = env.PreSynapticMechanism(mfc.PreSynapticMech_TimeList, time_list=[100,300,300]*U.ms),
+        postsynaptic_mech= env.PostSynapticMechTemplate(mfc.PostSynapticMech_ExpSyn_Base, tau=TCLOSE_in_ms*U.ms, e_rev=ESYN_in_mV*U.mV, weight=GSYN_in_pS*U.pS ).instantiate(cell_location=cell.soma) #popening=1.0, 
+    )
+    
+    
+    sim.record(cell, name='V')
+    sim.record(syn, name='SYNG', what=mf.StandardTags.Conductance)
+    sim.record(syn, name='SYNI', what=mf.StandardTags.Current)
+    
+    res = sim.run()
+    return res
+
+
+
+
+
+
+
+def run_sim(GSYN_in_pS, ESYN_in_mV, GLEAK_in_mS_per_cm2, TCLOSE_in_ms):
+
+    res = _run_sim(GSYN_in_pS=GSYN_in_pS, ESYN_in_mV=ESYN_in_mV, GLEAK_in_mS_per_cm2=GLEAK_in_mS_per_cm2, TCLOSE_in_ms=TCLOSE_in_ms)
+    V = res.get_trace('V')
+    SYNG = res.get_trace('SYNG')
+    SYNI = res.get_trace('SYNI')
+    time = V.time_pts_ms
+
+    d = np.vstack((time, 
+                    V.data_pts_in('mV'),
+                    SYNG.data_pts_in('pS'),
+                    SYNI.data_pts_in('pA'),
+                     )).T   
+    
+    
+    
+    fname_tmpl = "output/scenario020_ESYN{ESYN}_GSYN{GSYN}_GLEAK{GLEAK}_TCLOSE{TCLOSE}_result_morphforge"
+    fname = fname_tmpl.format(ESYN=ESYN_in_mV,
+                              GSYN=GSYN_in_pS,
+                              GLEAK=GLEAK_in_mS_per_cm2,
+                              TCLOSE=TCLOSE_in_ms, )
+    np.savetxt(fname, d)
+
+
+
+
+
+def my_mf_run():
+
+    GSYNs = [500, 1000]         # In pS
+    ESYNs = [0, -20]            # In mV
+    GLEAKs = [0.03333, 0.014286] # In mS/cm2
+    TCLOSEs = [5, 20, 100000]   # In ms
+
+    for (GSYN, ESYN, GLEAK, TCLOSE) in itertools.product(GSYNs, ESYNs, GLEAKs, TCLOSEs):
+        run_sim(GSYN_in_pS=GSYN, ESYN_in_mV=ESYN, GLEAK_in_mS_per_cm2=GLEAK, TCLOSE_in_ms=TCLOSE)
+
+    # We ran fine :)
+    print 'MF-RUN! OK'

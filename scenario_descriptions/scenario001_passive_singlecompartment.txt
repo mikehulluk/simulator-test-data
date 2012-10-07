@@ -5,9 +5,8 @@ title = Scenario 01: Responses of passive cell to step current injection
 description = """
 In a simulation from t=0 to t=350
 Create a single compartment neuron cell1:
- - area <A>, initial voltage <VS>
- - capacitance <C>.
-Add Leak channels to cell1 with density <gLK> and reversalpotential <erev>
+ - area <A>, initial voltage <VS>, capacitance <C>.
+Add Leak channels to cell1 with density <GLK> and reversalpotential <erev>
 Inject cell1 with step current <I> from t=100ms until t=250ms
 Record cell1.V as $V
 Run the simulation
@@ -20,7 +19,7 @@ Run the simulation
     VS=mV
     I=pA
     erev=mV
-    gLk=mS/cm2
+    GLk=mS/cm2
     V=mV
 
 [Parameter Values]

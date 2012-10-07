@@ -54,9 +54,12 @@ from testfunctionfunctorgenerator import TableTestFunctor
 def check_all_scenarios():
     print 'Comparing Scenarios'
     for scenario_file in sorted( os.listdir(scenario_path) ):
+        if not scenario_file.endswith('.txt'):
+            continue
+            
         # Only first for now:
         #if not 'scenario001' in scenario_file:
-        if not 'scenario075' in scenario_file:
+        if not 'scenario021' in scenario_file:
             continue
         check_scenario( os.path.join( scenario_path, scenario_file ) )
 
@@ -97,15 +100,9 @@ def parse_table(table_str, ParamTuple, variables, eps):
     validations = collections.defaultdict(list)
     for rawline in data:
 
-        # We can have commas in the input, so we need to split bby commas:
+        # We can have commas in the input, so we need to split by commas:
         for line in itertools.product(*[ (l.split(",") if l is not None else [None]) for l in rawline ]):
 
-            #line = rawline
-
-            #print line
-            #assert False
-            # Build a parameter tuple of the input:
-            #print line
             paramtuple = ParamTuple( **dict([ (var,decimal.Decimal(line[input_table_indices[var]])) for var in table_inputs ] ) )
 
             # Build functors to evaluate the output:
@@ -184,7 +181,7 @@ def check_scenario(scenario_file):
     print '    * %d unexpected files found' % len(unexpected_files)
 
     for unexpected_file in unexpected_files:
-        print bcolors.FAIL, '      > ', unexpected_file, bcolors.ENDC,
+        print bcolors.FAIL, '      > ', unexpected_file, bcolors.ENDC
 
 
     # Build an dictionary mapping {params -> {impl: filename, impl:filename} }
@@ -229,7 +226,6 @@ def check_scenario(scenario_file):
 
         # Plot the data:
         for (impl,filename) in impl_data.iteritems():
-            #print '       ->', impl
             data=  np.loadtxt(filename)
             for i in range(n_traces):
                 axes[i].plot( data[:,0], data[:,i+1],linewidth=2, alpha=0.5, label='%s-%s'%(impl, columns[i+1]) )
@@ -257,7 +253,6 @@ def check_scenario(scenario_file):
                     result, message = validator.check_data(data, colnames=columns)
                     print (bcolors.FAIL if not result else bcolors.OKGREEN),
                     print  '           - ', result, message, bcolors.ENDC
-                    #print bcolors.ENDC,
 
 
 

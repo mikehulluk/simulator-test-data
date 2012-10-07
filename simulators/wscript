@@ -1,4 +1,4 @@
 
 def generate(ctx):
     ctx.recurse('10_neuron')
-    #ctx.recurse('20_morphforge')
+    ctx.recurse('20_morphforge')
