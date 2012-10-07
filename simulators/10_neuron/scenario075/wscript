@@ -6,13 +6,16 @@ import shutil
 
 from subprocess import check_call as call
 
-
 @waf_util.chdirdecorator
-def generate(ctx):
-
+def cleanup(ctx):
     for nrnbuilddir in ['i686',]:
         if os.path.exists(nrnbuilddir):
             shutil.rmtree(nrnbuilddir)
+    
+
+@waf_util.chdirdecorator
+def generate(ctx):
+    cleanup()
         
     call('nrnivmodl')
     
@@ -25,3 +28,13 @@ def generate(ctx):
     call('nrngui -c GLEAK1=0.06666 -c GLEAK2=0.0025 -c RGJ1=100 -c IINJ=200 scenario075.hoc -c quit()'.split())
     call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.01   -c RGJ1=100 -c IINJ=200 scenario075.hoc -c quit()'.split())
     call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.0025 -c RGJ1=100 -c IINJ=200 scenario075.hoc -c quit()'.split())
+
+    call('nrngui -c GLEAK1=0.06666 -c GLEAK2=0.01   -c RGJ1=1000 -c IINJ=100 scenario075.hoc -c quit()'.split())
+    call('nrngui -c GLEAK1=0.06666 -c GLEAK2=0.0025 -c RGJ1=1000 -c IINJ=100 scenario075.hoc -c quit()'.split())
+    call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.01   -c RGJ1=1000 -c IINJ=100 scenario075.hoc -c quit()'.split())
+    call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.0025 -c RGJ1=1000 -c IINJ=100 scenario075.hoc -c quit()'.split())
+    
+    call('nrngui -c GLEAK1=0.06666 -c GLEAK2=0.01   -c RGJ1=1000 -c IINJ=200 scenario075.hoc -c quit()'.split())
+    call('nrngui -c GLEAK1=0.06666 -c GLEAK2=0.0025 -c RGJ1=1000 -c IINJ=200 scenario075.hoc -c quit()'.split())
+    call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.01   -c RGJ1=1000 -c IINJ=200 scenario075.hoc -c quit()'.split())
+    call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.0025 -c RGJ1=1000 -c IINJ=200 scenario075.hoc -c quit()'.split())

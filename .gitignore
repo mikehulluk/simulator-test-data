@@ -3,3 +3,5 @@
 /output/*
 *.pyc
 _output/*
+output/
+parser.out

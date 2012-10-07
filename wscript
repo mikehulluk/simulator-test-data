@@ -76,7 +76,9 @@ def generate(ctx):
     ctx.recurse('simulators')
 
 def cleanup(ctx):
-    shutil.rmtree('output')
+    if os.path.exists('output'):
+        shutil.rmtree('output')
+    ctx.recurse('simulators/10_neuron/scenario075')
     
 
 def compare(ctx):
