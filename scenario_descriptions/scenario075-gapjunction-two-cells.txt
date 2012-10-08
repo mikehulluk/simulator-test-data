@@ -9,7 +9,7 @@ Create a single compartment neuron 'cell1' with area 5000um2 and initialvoltage 
 Add Hodge-Huxley:LK channels to cell1 with density <GLEAK1> and reversalpotential 0
 Create a single compartment neuron 'cell2' with area 20000um2 and initialvoltage 0mV and capacitance 1.0 uF/cm2
 Add Hodge-Huxley:LK channels to cell2 with density <GLEAK2> and reversalpotential 0
-Create an gap junction 'gj'  with resistance <RGJ1> between cell1 and cell2
+Create a gap junction 'gj'  with resistance <RGJ1> between cell1 and cell2
 Inject step-current of <IINJ> into cell1 from t=100ms until t=300ms 
 Record cell1.V as $V1
 Record cell1.V as $V2

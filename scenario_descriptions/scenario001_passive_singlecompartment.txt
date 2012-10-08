@@ -17,8 +17,8 @@ Run the simulation
     C=uF/cm2
     VS=mV
     I=pA
-    erev=mV
-    GLk=mS/cm2
+    EREV=mV
+    GLK=mS/cm2
     V=mV
 
 [Parameter Values]

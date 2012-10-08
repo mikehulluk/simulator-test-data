@@ -58,9 +58,9 @@ def check_all_scenarios():
             continue
             
         # Only first for now:
-        #if not 'scenario001' in scenario_file:
+        if not 'scenario001' in scenario_file:
         #if not 'scenario021' in scenario_file:
-        if not 'scenario075' in scenario_file:
+        #if not 'scenario075' in scenario_file:
             continue
         check_scenario( os.path.join( scenario_path, scenario_file ) )
 
