@@ -3,11 +3,10 @@ scenario_short= scenario001
 title = Scenario 01: Responses of passive cell to step current injection
 
 description = """
-In a simulation from t=0 to t=350
-Create a single compartment neuron cell1:
- - area <A>, initial voltage <VS>, capacitance <C>.
-Add Leak channels to cell1 with density <GLK> and reversalpotential <erev>
-Inject cell1 with step current <I> from t=100ms until t=250ms
+In a simulation lasting 350.0ms
+Create a single compartment neuron 'cell1' with area <A> and initialvoltage <VS> and capacitance <C>
+Add Leak channels to cell1 with conductance <GLK> and reversalpotential <EREV>
+Inject step-current of <I> into cell1 from t=100ms until t=250ms
 Record cell1.V as $V
 Run the simulation
 """

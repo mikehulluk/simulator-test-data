@@ -82,15 +82,13 @@ def run_sim(GSYN_in_pS, ESYN_in_mV, GLEAK_in_mS_per_cm2, TCLOSE_in_ms, TOPEN_in_
 
 
 
-
-
 def my_mf_run():
 
-    GSYNs = [500, 1000]         # In pS
-    ESYNs = [0, -20]            # In mV
-    GLEAKs = [0.03333, 0.014286] # In mS/cm2
-    TCLOSEs = [5, 20, 100000]   # In ms
-    TOPENs = [1,4]   # In ms
+    GSYNs = [500, 1000]             # In pS
+    ESYNs = [0, -20]                # In mV
+    GLEAKs = [0.03333, 0.014286]    # In mS/cm2
+    TCLOSEs = [5, 20, 100000]       # In ms
+    TOPENs = [1,4]                  # In ms
 
     for (GSYN, ESYN, GLEAK, TCLOSE, TOPEN) in itertools.product(GSYNs, ESYNs, GLEAKs, TCLOSEs, TOPENs):
         run_sim(GSYN_in_pS=GSYN, ESYN_in_mV=ESYN, GLEAK_in_mS_per_cm2=GLEAK, TCLOSE_in_ms=TCLOSE, TOPEN_in_ms=TOPEN)

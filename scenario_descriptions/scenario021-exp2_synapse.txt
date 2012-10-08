@@ -3,13 +3,11 @@ scenario_short= scenario021
 title = Response of a passive cell to alpha synapse events
 
 description = """
-In a simulation from t=0 to t=350
-Create a single compartment neuron cell1
+In a simulation lasting 350ms
+Create a single compartment neuron 'cell1' with area 10000um2 and initialvoltage -50mV and capacitance 1e-3 uF/cm2
 Add Hodge-Huxley:LK channels to cell1 with density <GLEAK> and reversalpotential -50
-- area 10000um2 initial voltage -50
- - capacitance 1e-3 uF/cm2
-Create an alpha synapse SYN with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> and opening time <TOPEN> at cell1 
-Drive SYN with spike times [100, 300, 300]
+
+Create a DoubleExponential synapse onto cell1 with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> and opening time <TOPEN> driven with spike-times at [100, 300, 300]
 Record cell1.V as $V
 Record SYN.g as $SYN_G
 Record SYN.i as $SYN_I

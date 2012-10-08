@@ -59,7 +59,8 @@ def check_all_scenarios():
             
         # Only first for now:
         #if not 'scenario001' in scenario_file:
-        if not 'scenario021' in scenario_file:
+        #if not 'scenario021' in scenario_file:
+        if not 'scenario075' in scenario_file:
             continue
         check_scenario( os.path.join( scenario_path, scenario_file ) )
 
@@ -228,7 +229,7 @@ def check_scenario(scenario_file):
         for (impl,filename) in impl_data.iteritems():
             data=  np.loadtxt(filename)
             for i in range(n_traces):
-                axes[i].plot( data[:,0], data[:,i+1],linewidth=2, alpha=0.5, label='%s-%s'%(impl, columns[i+1]) )
+                axes[i].plot( data[:,0], data[:,i+1], label='%s-%s'%(impl, columns[i+1]), linewidth=2, alpha=0.5,  )
 
         # Smarten up the axes:
         for i, ax in enumerate(axes):
@@ -236,7 +237,8 @@ def check_scenario(scenario_file):
             ax.set_ymargin(0.05)
             ax.legend()
             ax.set_ylabel( columns[i+1] )
-
+            
+    #pylab.show()
 
     if validators:
         for impl, param_filename_dict in impl_param_filename_dict.iteritems():
