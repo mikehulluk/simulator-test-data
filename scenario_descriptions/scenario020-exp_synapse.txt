@@ -5,11 +5,11 @@ title = Response of a passive cell to alpha synapse events
 description = """
 In a simulation lasting 350ms
 Create a single compartment neuron 'cell1' with area 10000um2 and initialvoltage -50mV and capacitance 1e-3 uF/cm2
-Add Hodge-Huxley:LK channels to cell1 with density <GLEAK> and reversalpotential -50
-Create a SingleExponential synapse onto cell1 with conductance <GSYN>  and reversalpotential <ESYN> and closing time <TCLOSE> driven with spike-times at [100, 300, 300]
+Add Leak channels to cell1 with conductance <GLEAK> and reversalpotential -50mV
+Create a SingleExponential synapse 'SYN' onto cell1 with conductance <GSYN>  and reversalpotential <ESYN> and closing-time <TCLOSE> driven with spike-times at [100, 300, 300]ms
 Record cell1.V as $V
-Record SYN.g as $SYN_G
-Record SYN.i as $SYN_I
+Record SYN.Conductance as $SYN_G
+Record SYN.Current as $SYN_I
 Run the simulation
 """
 

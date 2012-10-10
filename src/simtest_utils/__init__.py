@@ -48,6 +48,17 @@ scenario_path = os.path.join(rootdir, 'scenario_descriptions')
 output_path = os.path.join(rootdir, 'output')
 
 
+
+class Locations(object):
+    @classmethod
+    def scenario_descriptions(cls):
+        return os.path.join(rootdir, 'scenario_descriptions')
+    @classmethod
+    def output_root(cls):
+        return os.path.join(rootdir, 'output')
+        
+        
+        
 from testfunctionfunctorgenerator import TableTestFunctor
 
 

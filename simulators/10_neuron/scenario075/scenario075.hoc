@@ -22,7 +22,7 @@ length = 100
 soma1 {
     L = length
     diam = A1 / (length * PI)
-    cm =1.0 /10
+    cm = 0.1
     //(NEURON works in S/cm2 and mV (G_LEAK is in mS/cm2) )
     g_pas = GLEAK1 / 1000
     e_pas = 0
@@ -39,7 +39,7 @@ length = 100
 soma2 {
     L = length
     diam = A2 / (length * PI)
-    cm =1.0 /10
+    cm = 0.1
     //(NEURON works in S/cm2 and mV (G_LEAK is in mS/cm2) )
     g_pas = GLEAK2 / 1000
     e_pas = 0
