@@ -31,7 +31,7 @@ def _run_sim(GSYN_in_pS, ESYN_in_mV, GLEAK_in_mS_per_cm2, TCLOSE_in_ms, TOPEN_in
     cell.set_passive(mf.PassiveProperty.SpecificCapacitance, (1e-3) * U.uF / U.cm2)
     
     syn = sim.create_synapse(
-        presynaptic_mech = env.PreSynapticMechanism(mfc.PreSynapticMech_TimeList, time_list=[100,300,300]*U.ms),
+        trigger = env.SynapticTrigger(mfc.SynapticTriggerAtTimes, time_list=[100,300,300]*U.ms),
         postsynaptic_mech= env.PostSynapticMechTemplate(mfc.PostSynapticMech_Exp2Syn_Base, 
                                 tau_close=TCLOSE_in_ms*U.ms, 
                                 tau_open=TOPEN_in_ms*U.ms,

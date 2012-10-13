@@ -15,7 +15,7 @@ def cleanup(ctx):
 
 @waf_util.chdirdecorator
 def generate(ctx):
-    cleanup()
+    cleanup(ctx)
         
     call('nrnivmodl')
     
