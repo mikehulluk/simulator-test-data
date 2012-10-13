@@ -1,0 +1,16 @@
+
+
+
+#import os
+#import itertools
+#import numpy as np
+
+import waf_util
+import mfcuke
+
+@waf_util.chdirdecorator
+def generate(ctx):
+
+    fname = waf_util.get_all_scenarios()['scenario020']
+    mfcuke.run_scenario_filename(fname)
+
