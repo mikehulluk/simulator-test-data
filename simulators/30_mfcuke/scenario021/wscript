@@ -1,11 +1,10 @@
 
-
 import waf_util
 import mfcuke
 
 @waf_util.chdirdecorator
 def generate(ctx):
 
-    fname = waf_util.get_all_scenarios()['scenario020']
+    fname = waf_util.get_all_scenarios()['scenario021']
     mfcuke.run_scenario_filename(fname)
 
