@@ -27,37 +27,37 @@ def _run_sim(GLEAK1_in_mS_per_cm2, GLEAK2_in_mS_per_cm2, RGJ1_in_megaohm, IINJ_i
     lk_chl1 = env.Channel(mfc.StdChlLeak,
                     conductance=GLEAK1_in_mS_per_cm2 * U.mS/U.cm2,
                     reversalpotential=0*U.mV )
-    
+
     cell1.apply_channel(lk_chl1)
     cell1.set_passive(mf.PassiveProperty.SpecificCapacitance, (1e-3) * U.uF / U.cm2)
-    
-    
+
+
     cell2 = sim.create_cell(area=20000 * U.um2, initial_voltage=0*U.mV)
     lk_chl2 = env.Channel(mfc.StdChlLeak,
                     conductance=GLEAK2_in_mS_per_cm2 * U.mS/U.cm2,
-                    reversalpotential=0*U.mV 
+                    reversalpotential=0*U.mV
                     )
-                    
+
     cell2.apply_channel(lk_chl2)
     cell2.set_passive(mf.PassiveProperty.SpecificCapacitance, (1e-3) * U.uF / U.cm2)
-    
+
     gj = sim.create_gapjunction(
         celllocation1 = cell1.soma,
         celllocation2 = cell2.soma,
-        resistance = RGJ1_in_megaohm * mf.MOhm
+        resistance = RGJ1_in_megaohm * mf.units.MOhm
         )
-    
+
     sim.create_currentclamp(cell_location=cell1.soma,
                             amp=IINJ_in_pA * U.pA,
                             delay=100*U.ms,
                             dur=250*U.ms)
-    
-    
-    
+
+
+
     sim.record(cell1, name='V1')
     sim.record(cell2, name='V2')
-    
-    
+
+
     res = sim.run()
     return res
 
@@ -72,21 +72,21 @@ def run_sim(GLEAK1_in_mS_per_cm2, GLEAK2_in_mS_per_cm2, RGJ1_in_megaohm, IINJ_in
     res = _run_sim(GLEAK1_in_mS_per_cm2, GLEAK2_in_mS_per_cm2, RGJ1_in_megaohm, IINJ_in_pA)
     V1 = res.get_trace('V1')
     V2 = res.get_trace('V2')
-   
+
     time = V1.time_pts_ms
 
-    d = np.vstack(( time, 
+    d = np.vstack(( time,
                     V1.data_pts_in('mV'),
                     V2.data_pts_in('mV'),
-                     )).T   
-    
+                     )).T
+
     fname_tmpl = "output/scenario075_GLEAK1{GLEAK1}_GLEAK2{GLEAK2}_RGJ1{RGJ1}_IINJ{IINJ}_result_morphforge"
     fname = fname_tmpl.format(
-        GLEAK1=GLEAK1_in_mS_per_cm2, 
-        GLEAK2=GLEAK2_in_mS_per_cm2, 
-        RGJ1=RGJ1_in_megaohm, 
+        GLEAK1=GLEAK1_in_mS_per_cm2,
+        GLEAK2=GLEAK2_in_mS_per_cm2,
+        RGJ1=RGJ1_in_megaohm,
         IINJ=IINJ_in_pA)
-        
+
     np.savetxt(fname, d)
 
 
@@ -98,7 +98,7 @@ def my_mf_run():
     GLEAK2s = [0.01, 0.0025]        # In mS/cm2
     RGJ1s = [100, 1000]             # In MOhm
     IINJs = [100,200]                # In pA
-    
+
 
     for (GLEAK1, GLEAK2, RGJ1, IINJ) in itertools.product(GLEAK1s, GLEAK2s, RGJ1s, IINJs):
         run_sim(GLEAK1_in_mS_per_cm2=GLEAK1, GLEAK2_in_mS_per_cm2=GLEAK2, RGJ1_in_megaohm=RGJ1, IINJ_in_pA=IINJ)

@@ -68,6 +68,10 @@ def ensure_directory_structure_setup(ctx):
 
 
 
+
+def setupdirs(ctx):
+    ensure_directory_structure_setup(ctx)
+
 def generate(ctx):
     
     ensure_directory_structure_setup(ctx)
@@ -83,4 +87,5 @@ def cleanup(ctx):
 
 def compare(ctx):
     import simtest_utils
-    simtest_utils.check_all_scenarios()
+    #simtest_utils.check_all_scenarios()
+    simtest_utils.check_scenarios()

@@ -61,10 +61,8 @@ class TableTestFunctor(object):
         if time_stop is not None:
             keep_mask = np.logical_and(keep_mask, (data_raw[:,0] <= time_stop+dt) )
 
-        #print keep_mask
+
         data_slice = data_raw[keep_mask,:]
-        #print data_slice
-        #print data_slice.shape
         assert data_slice.shape[1] == 2
         assert data_slice.shape[0] >= 2
 
@@ -86,9 +84,6 @@ class TableTestFunctor(object):
             area = integrate.simps(data_slice[:,1], data_slice[:,0])
             t_range = data_slice[-1,0] - data_slice[0,0]
             res = float( area/t_range )
-            #print area, t_range
-            #print res
-            #assert False
             return res
 
         if function == 'at':

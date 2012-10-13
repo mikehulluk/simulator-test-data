@@ -1,4 +1,29 @@
+import os
+import itertools
 
+
+import waf_util
+import fnmatch
+
+    
+
+
+@waf_util.chdirdecorator
 def generate(ctx):
-    ctx.recurse('10_neuron')
-    ctx.recurse('20_morphforge')
+
+
+    dirs_to_recurse = waf_util.get_target_simulator_dirs()
+    scenarios= waf_util.get_target_scenarios()
+    
+    for (tgt_dir, scenario) in itertools.product(dirs_to_recurse, scenarios):
+    
+        print 'Generating for:', tgt_dir, scenario
+        recurse_dir =  '%s/%s' % (tgt_dir, scenario)
+        if not os.path.exists(recurse_dir) or not not os.path.exists(recurse_dir+'wscript'):
+            assert False
+        ctx.recurse(recurse_dir)
+
+
+
+
+    

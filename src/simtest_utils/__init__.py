@@ -62,18 +62,16 @@ class Locations(object):
 from testfunctionfunctorgenerator import TableTestFunctor
 
 
-def check_all_scenarios():
-    print 'Comparing Scenarios'
-    for scenario_file in sorted( os.listdir(scenario_path) ):
-        if not scenario_file.endswith('.txt'):
-            continue
-            
-        # Only first for now:
-        if not 'scenario001' in scenario_file:
-        #if not 'scenario021' in scenario_file:
-        #if not 'scenario075' in scenario_file:
-            continue
-        check_scenario( os.path.join( scenario_path, scenario_file ) )
+
+def check_scenarios():
+    import waf_util
+    scen_filenames = waf_util.get_all_scenarios()
+    
+    for tgt_scen in waf_util.get_target_scenarios():
+        tgt_scen_fname = scen_filenames[tgt_scen]
+        check_scenario( tgt_scen_fname )
+    
+
 
 
 
@@ -99,7 +97,25 @@ def parse_table(table_str, ParamTuple, variables, eps):
     table_lines = [[tok.strip() for tok in line] for line in table_lines]
     table_lines = [[(tok if tok !='?' else None) for tok in line] for line in table_lines]
     header, data= table_lines[0], table_lines[1:]
-
+    
+    # The header can have an optional '(eps:XXX)' in it. So lets parse that out:
+    header_eps = {}
+    re_header_eps = re.compile(r"""\(eps=(?P<eps>[^)*]*)\)""")
+    for i,h in enumerate(header):
+        m = re_header_eps.search(h)
+        if m:
+            #assert False
+            #new_header = h[:m.start()].strip() #
+            new_header = re_header_eps.sub('', h)
+            header[i] = new_header
+            header_eps[new_header] = float( m.groupdict()['eps'] )
+        else:
+            header_eps[h] = eps
+    
+    #print header_eps
+    #assert False
+    
+    
     # Look at what in the header is a input, and what is an output:
     table_inputs = set(variables) & set(header)
     table_outputs = set(header).difference( set(variables))
@@ -123,7 +139,8 @@ def parse_table(table_str, ParamTuple, variables, eps):
                 if value is None:
                     continue
                 value = float(value)
-                valiation = TableTestFunctor(test_expr=output, expected_value=value, eps=eps)
+                col_eps = header_eps[output]
+                valiation = TableTestFunctor(test_expr=output, expected_value=value, eps=col_eps)
                 validations[paramtuple].append(valiation)
 
     return validations
@@ -183,7 +200,7 @@ def check_scenario(scenario_file):
         if m:
             params, impl = m.groups()[:-1], m.groups()[-1]
             params = ParamTuple(**dict([(var_name, decimal.Decimal(param)) for (var_name, param) in zip(expected_variables, params)]))
-            assert not params in impl_param_filename_dict[impl], 'Duplicate Parameters foudn!'
+            assert not params in impl_param_filename_dict[impl], 'Duplicate Parameters found!'
             impl_param_filename_dict[impl][params] = filename
         else:
             unexpected_files.append(filename)
@@ -248,8 +265,6 @@ def check_scenario(scenario_file):
             ax.set_ymargin(0.05)
             ax.legend()
             ax.set_ylabel( columns[i+1] )
-            
-    #pylab.show()
 
     if validators:
         for impl, param_filename_dict in impl_param_filename_dict.iteritems():

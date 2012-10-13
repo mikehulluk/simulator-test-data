@@ -7,6 +7,9 @@ import itertools
 import pylab
 import os
 import numpy as np
+#import copy
+import random
+
 
 import quantities as pq
 import morphforge.stdimports as mf
@@ -92,7 +95,8 @@ class ActionHandlerLibrary(object):
         assert len(handlers) == 1
         return handlers[0]
 
-    def build_code_paths(self, description_lines):
+    def build_code_paths(self, description_lines, mode='all'):
+
 
         # Build a list of all possible functors for each line:
         all_child_handlers = []
@@ -102,11 +106,40 @@ class ActionHandlerLibrary(object):
                 raise RuntimeError('No child-handler specified for: %s' % line)
             all_child_handlers.append( h.child_handlers )
 
+
         # Take the outer-product to get all the code-paths:
         code_paths = []
-        for hs in itertools.product(*all_child_handlers):
-            code_paths.append(ActionCodePath(description_lines, hs) )
-        return code_paths
+
+        if mode == 'all':
+            for hs in itertools.product(*all_child_handlers):
+                code_paths.append(ActionCodePath(description_lines, hs) )
+            return code_paths
+
+        if mode == 'reduced':
+            # Ensure that each handler is used at least once, and leave the 
+            # rest to randomisation.
+            unused_all_child_handlers = [ sl[:] for sl in all_child_handlers]
+
+            for ch in unused_all_child_handlers:
+                random.shuffle(ch)
+
+            # Have we covered all bases?
+            while(True):
+
+                if not [sublist for sublist in  unused_all_child_handlers if sublist]:
+                    break
+
+                handlers = []
+                for lineindex, line in enumerate(description_lines):
+                    handler = None
+                    if unused_all_child_handlers[lineindex]:
+                        handler = unused_all_child_handlers[lineindex].pop()
+                    else:
+                        handler = random.choice(all_child_handlers[lineindex])
+                    handlers.append( handler)
+
+                code_paths.append(ActionCodePath(description_lines, handlers))
+            return code_paths
 
 
 
@@ -160,7 +193,7 @@ def convert_all_string_to_quantities(dct, keys=None):
 def sim_builder_wrapper( func ):
     def new_func(self, ctx, expr, groupdict, ):
         assert set(groupdict.keys()) == set(['duration'])
-        convert_all_string_to_quantities(groupdict) 
+        convert_all_string_to_quantities(groupdict)
         return func(self, ctx, sim_duration=groupdict['duration'])
     return new_func
 
@@ -308,7 +341,6 @@ class sim_add_channel(object):
         if channelname == 'Leak':
             assert set( kwargs.keys() ) == set(['reversalpotential','conductance'])
             convert_all_string_to_quantities(kwargs)
-
             chl = ctx.env.Channel(mfc.StdChlLeak, conductance=kwargs['conductance'], reversalpotential=kwargs['reversalpotential'] )
         else:
             assert False
@@ -369,6 +401,8 @@ class sim_create_synapse(object):
         synkwargs = ctx.resolve_context_parameter_values(synkwargs)
         convert_all_string_to_quantities(synkwargs)
 
+        times_ms = [float(f) for f in times.split(',')]
+
         # Create the synapse_tmplate:
         if synapsetype == 'SingleExponential':
             syn_kw_mapped = {
@@ -390,7 +424,7 @@ class sim_create_synapse(object):
 
 
         syn = ctx.sim.create_synapse(
-                trigger = ctx.env.SynapticTrigger(mf.SynapticTriggerAtTimes, time_list=[100] * pq.ms ),
+                trigger = ctx.env.SynapticTrigger(mf.SynapticTriggerAtTimes, time_list=times_ms * pq.ms ),
                 postsynaptic_mech = syn_tmpl.instantiate(cell_location=target_cell_loc)
                  )
         ctx.obj_refs[name] = syn
@@ -403,35 +437,35 @@ class sim_create_synapse(object):
 
 handler_lib = ActionHandlerLibrary()
 
-handler_lib.register_handler( ActionHandleParent( 
-    src_regex_str = r"""In a simulation lasting (?P<duration>[\d.]*ms)""", 
+handler_lib.register_handler( ActionHandleParent(
+    src_regex_str = r"""In a simulation lasting (?P<duration>[\d.]*ms)""",
     child_handlers=[sim_builder_a(), sim_builder_b()]) )
 
-handler_lib.register_handler( ActionHandleParent( 
+handler_lib.register_handler( ActionHandleParent(
     src_regex_str = r"""Run the simulation""",
     child_handlers=[sim_run()]))
 
 handler_lib.register_handler( ActionHandleParent(
-    src_regex_str = r"""Create a single compartment neuron '(?P<name>\w+)' with (?P<params>.*)""", 
+    src_regex_str = r"""Create a single compartment neuron '(?P<name>\w+)' with (?P<params>.*)""",
     child_handlers=[sim_build_single_compartment()] ) )
 
-handler_lib.register_handler( ActionHandleParent( 
-    src_regex_str = r"""Record (?P<where>[\w]*)\.(?P<what>[\w]+) as [$](?P<as>\w+)""", 
+handler_lib.register_handler( ActionHandleParent(
+    src_regex_str = r"""Record (?P<where>[\w]*)\.(?P<what>[\w]+) as [$](?P<as>\w+)""",
     child_handlers=[sim_record()]))
 
-handler_lib.register_handler( ActionHandleParent( 
+handler_lib.register_handler( ActionHandleParent(
     src_regex_str = r"""Inject step-current of (?P<amplitude>.*) into (?P<cell>\w+)(\.(?P<location>\w+))? from t=(?P<from>.*) until t=(?P<until>.*)""",
     child_handlers=[sim_step_current_injection()]) )
 
-handler_lib.register_handler( ActionHandleParent( 
-    src_regex_str = r"""Add (?P<channelname>\w+)* channels to (?P<cell>\w+)* with (?P<params>.*)""", 
+handler_lib.register_handler( ActionHandleParent(
+    src_regex_str = r"""Add (?P<channelname>\w+)* channels to (?P<cell>\w+)* with (?P<params>.*)""",
     child_handlers=[sim_add_channel()]) )
 
-handler_lib.register_handler( ActionHandleParent( 
-    src_regex_str = r"""Create a gap junction '(?P<name>\w+)' with resistance (?P<resistance>.*) between (?P<loc1>[\w.]+) and (?P<loc2>[\w.]+)""", 
+handler_lib.register_handler( ActionHandleParent(
+    src_regex_str = r"""Create a gap junction '(?P<name>\w+)' with resistance (?P<resistance>.*) between (?P<loc1>[\w.]+) and (?P<loc2>[\w.]+)""",
     child_handlers=[sim_create_gap_junction()]  ) )
 
-handler_lib.register_handler( ActionHandleParent( 
+handler_lib.register_handler( ActionHandleParent(
     src_regex_str = r"""Create a (?P<synapsetype>.*) synapse '(?P<name>.*)' onto (?P<location>[\w.]*) with (?P<params>.*) driven with spike-times at \[(?P<times>.*)\]ms""",
     child_handlers=[sim_create_synapse()]) )
 
@@ -442,10 +476,9 @@ handler_lib.register_handler( ActionHandleParent(
 
 
 
-def run_scenario_filename(fname):
+def run_scenario_filename(fname, code_path_mode='reduced', only_first_paramtuple=False, plot_results=False):
     print 'Reading from file', fname
     conf = configobj.ConfigObj(fname)
-
 
 
     units_dict = dict( [(k,NeuroUnitParser.Unit(v).as_quantities_unit() ) for (k,v) in conf['Units'].iteritems() ] )
@@ -455,16 +488,16 @@ def run_scenario_filename(fname):
     description_lines = [ l.strip() for l in conf['description'].split('\n')]
     description_lines = [ l for l in description_lines if l]
 
-    code_paths = handler_lib.build_code_paths(description_lines)
-    print 'Code Paths found', len(code_paths)
+    code_paths = handler_lib.build_code_paths(description_lines, mode=code_path_mode)
 
     for param_index, param_vals_inst in enumerate(itertools.product(*param_vals)) :
-        if param_index > 1:
-            continue
+
+
+        if only_first_paramtuple and param_index != 0:
+            break
 
         # For each code_path
         for code_path_index, code_path in enumerate(code_paths):
-
 
             # Build the base context:
             parameter_values_float = {}
@@ -501,8 +534,9 @@ def run_scenario_filename(fname):
 
             np.savetxt(opfile, data_matrix)
 
-            mf.TagViewer(ctx.res, show=False)
-            break
+            if plot_results:
+                mf.TagViewer(ctx.res, show=False)
+            #break
 
 
 
@@ -516,9 +550,7 @@ def main():
     src_files =  glob.glob( simtest_utils.Locations.scenario_descriptions() + "/*.txt")
     skipped =[]
     for fname in src_files:
-        #if not 'scenario021' in fname:
-        #    continue
-        run_scenario_filename(fname)
+        run_scenario_filename(fname, only_first_paramtuple=True, plot_results = True)
 
 
     print 'Skipped:'
