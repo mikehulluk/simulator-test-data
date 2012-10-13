@@ -56,21 +56,24 @@ class Locations(object):
     @classmethod
     def output_root(cls):
         return os.path.join(rootdir, 'output')
-        
-        
-        
+
+
+
 from testfunctionfunctorgenerator import TableTestFunctor
 
 
 
-def check_scenarios():
+def check_scenarios(**kwargs):
     import waf_util
     scen_filenames = waf_util.get_all_scenarios()
-    
+
+    results = []
     for tgt_scen in waf_util.get_target_scenarios():
         tgt_scen_fname = scen_filenames[tgt_scen]
-        check_scenario( tgt_scen_fname )
-    
+        res = check_scenario( tgt_scen_fname, **kwargs )
+        results.append(res)
+    return results
+
 
 
 
@@ -97,25 +100,21 @@ def parse_table(table_str, ParamTuple, variables, eps):
     table_lines = [[tok.strip() for tok in line] for line in table_lines]
     table_lines = [[(tok if tok !='?' else None) for tok in line] for line in table_lines]
     header, data= table_lines[0], table_lines[1:]
-    
+
     # The header can have an optional '(eps:XXX)' in it. So lets parse that out:
     header_eps = {}
     re_header_eps = re.compile(r"""\(eps=(?P<eps>[^)*]*)\)""")
     for i,h in enumerate(header):
         m = re_header_eps.search(h)
         if m:
-            #assert False
-            #new_header = h[:m.start()].strip() #
-            new_header = re_header_eps.sub('', h)
+            new_header = re_header_eps.sub('', h).strip()
             header[i] = new_header
             header_eps[new_header] = float( m.groupdict()['eps'] )
         else:
             header_eps[h] = eps
-    
-    #print header_eps
-    #assert False
-    
-    
+    header = [h.strip() for h in header]
+
+
     # Look at what in the header is a input, and what is an output:
     table_inputs = set(variables) & set(header)
     table_outputs = set(header).difference( set(variables))
@@ -148,11 +147,14 @@ def parse_table(table_str, ParamTuple, variables, eps):
 
 
 
-def check_scenario(scenario_file):
+def check_scenario(scenario_file, create_mredoc=True):
 
     print 'Checking Scenario from', scenario_file
     config = configobj.ConfigObj(scenario_file)
-    print config['title']
+    scenario_short = config['scenario_short']
+    scenario_title = config['title']
+    print scenario_short
+    print scenario_title
 
     # Generate the file-list:
     scen_output_dir = os.path.join(output_path, config['scenario_short'] )
@@ -248,6 +250,7 @@ def check_scenario(scenario_file):
     # #########################
     # Plot Comparitive graphs:
     n_traces = len(columns) - 1
+    figures = {}
     for param, impl_data in param_impl_filename_dict.iteritems():
         f = pylab.figure()
         f.suptitle('For Parameters: %s' % str(param))
@@ -266,22 +269,57 @@ def check_scenario(scenario_file):
             ax.legend()
             ax.set_ylabel( columns[i+1] )
 
+        # Save the figures:
+        figures[param] = f
+
+    table_results = {}
+    missing_parameter_sets = []
     if validators:
         for impl, param_filename_dict in impl_param_filename_dict.iteritems():
             print '   * Checking Implementation Values against tables: %s' %impl
             for parameter, _validators in validators.iteritems():
                 if not parameter in param_filename_dict:
                     print bcolors.WARNING, '        * Missing Parameters:',parameter, bcolors.ENDC
+                    missing_parameter_sets.append( (impl, parameter) )
                     continue
 
                 print '       * Checking against parameters:',parameter
                 # Load the data:
                 data = np.loadtxt(param_filename_dict[parameter])
                 for validator in _validators:
-                    result, message = validator.check_data(data, colnames=columns)
+                    result, message, calc_value = validator.check_data(data, colnames=columns)
                     print (bcolors.FAIL if not result else bcolors.OKGREEN),
                     print  '           - ', result, message, bcolors.ENDC
 
+                    table_results[impl, parameter, validator.test_expr] = (result, message, calc_value, validator)
+
+
+    if not create_mredoc:
+        return None
+
+
+
+    import mredoc as mrd
+
+    comparison_graphs = mrd.Section('Comparison Graphs',
+        [ mrd.Section(str(param), mrd.Image(fig, auto_adjust=False)) for (param,fig) in sorted(figures.items()) ]
+        )
+
+
+    tbl_comp_sections = []
+    for impl in  impl_param_filename_dict:
+        s = build_mredoc_results_table(impl=impl, validators=validators, table_results=table_results, missing_parameter_sets=missing_parameter_sets, expected_variables=expected_variables)
+        tbl_comp_sections.append(s)
+
+
+
+    return mrd.SectionNewPage('Results of Scenario: %s' % scenario_title,
+        mrd.VerbatimBlock(config['description'] ) ,
+        mrd.Paragraph('Tesing against: %s' % ', '.join(impl_param_filename_dict) ),
+        mrd.TableOfContents(),
+        mrd.Section('Table Comparison', *tbl_comp_sections),
+        comparison_graphs,
+    )
 
 
     pylab.show()
@@ -289,3 +327,42 @@ def check_scenario(scenario_file):
 
 
 
+def build_mredoc_results_table(impl, validators, table_results, missing_parameter_sets, expected_variables):
+        import mredoc as mrd
+
+        output_cols = set(itertools.chain(*[[v.test_expr for v in V] for V in validators.values()]))
+        input_cols = sorted(expected_variables)
+        output_cols = sorted(output_cols)
+
+        tbl_res = []
+        for param in sorted(validators.keys()):
+            in_vals = [ str(getattr(param,c)) for c in input_cols]
+            out_vals = []
+            for output_col_index, output_col in enumerate(output_cols):
+                key = (impl, param, output_col)
+                if key in table_results:
+                    R = table_results[key]
+
+                    if table_results[key][0]:
+                        res = 'OK %f (%s [eps:%s])' % ( R[2],R[3].expected_value, R[3].eps  )
+                    else:
+                        res = '***ERROR %f (%s [eps:%s]) ***' % ( R[2],R[3].expected_value, R[3].eps  )
+                else:
+
+                    if (impl,param) in missing_parameter_sets:
+                        res = ' *** MISSING! *** '
+                    else:
+                        res = '-'
+                out_vals.append(str(res) )
+
+            tbl_res.append(in_vals+out_vals)
+
+
+        headers = input_cols + output_cols
+
+        res_tbl = mrd.VerticalColTable( headers, tbl_res)
+
+        impl_sect = mrd.Section('Table of Results for: %s' % impl,
+                res_tbl,
+                )
+        return impl_sect

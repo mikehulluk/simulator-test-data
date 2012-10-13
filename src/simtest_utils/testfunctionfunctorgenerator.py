@@ -24,7 +24,7 @@ class TableTestFunctor(object):
         data_slice = self._get_data_slice(data_matrix=data_matrix, colnames=colnames)
         result = self._apply_operation(data_slice)
         msg =  '%s ==> %f == %f [Res==Expected] (eps:%f)' % (self.test_expr, result, self.expected_value, self.eps)
-        return np.fabs(result - self.expected_value) < self.eps, msg #"Found: %f Expected: %f"%(result, self.expected_value)
+        return np.fabs(result - self.expected_value) < self.eps, msg, result #"Found: %f Expected: %f"%(result, self.expected_value)
 
 
     def _get_data_slice(self, data_matrix, colnames):

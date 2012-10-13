@@ -57,7 +57,7 @@ expectations_i = """
 
 expectations_ii = """
 # 2. Check that the synapse decays as expected over time:
-| GLEAK       | GSYN     | ESYN   | TCLOSE    | SYN_G[102](eps=0.5)  |
+| GLEAK       | GSYN     | ESYN   | TCLOSE    | SYN_G[102](eps=0.005)  |
 |-------------|----------|--------|-----------|----------------------|
 | 0.03333     | 1000.00  | 0      | 5         | 670.32               |
 | 0.03333     |  500.00  | 0      | 5         | 335.16               |

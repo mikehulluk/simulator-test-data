@@ -117,7 +117,12 @@ lexer = ply.lex.lex()
 parser = ply.yacc.yacc(outputdir="somedirectory", write_tables=0)
 
 
+_expr_cache = {}
 def parse_expr(s):
+    if not s in _expr_cache:
+        _expr_cache[s] = parser.parse(s, lexer=lexer)
+    return _expr_cache[s]
+    
     return parser.parse(s, lexer=lexer)
 
 

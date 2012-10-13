@@ -88,4 +88,10 @@ def cleanup(ctx):
 def compare(ctx):
     import simtest_utils
     #simtest_utils.check_all_scenarios()
-    simtest_utils.check_scenarios()
+    
+    sects = simtest_utils.check_scenarios(create_mredoc=True)
+    import mredoc as mrd
+    sect = mrd.Section('Results', *sects)
+    sect.to_html('~/test_results/')
+    sect.to_pdf('~/test_results/output.pdf')
+    
