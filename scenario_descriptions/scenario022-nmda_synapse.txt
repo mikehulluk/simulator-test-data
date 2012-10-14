@@ -1,0 +1,90 @@
+
+scenario_short= scenario022
+title = Response of a passive cell to synaptic input from an NMDA synapse
+
+
+notes = """
+Using the form of NMDA receptor given in Koch Pg. 101.
+gsyn = gn * (e^(-t/t1) - e^(-t/t2) ) / (1 + eta *[mg2conc] * e^(-gamma * V) )
+
+"""
+
+description = """
+In a simulation lasting 350ms
+Create a single compartment neuron 'cell1' with area 0.1cm2 and initialvoltage -50mV and capacitance 1e-3 uF/cm2
+Add Leak channels to cell1 with conductance 0.03333mS/cm2 and reversalpotential -50mV
+Create an NMDA synapse 'SYN' onto cell1 with peak-conductance <GSYN>
+                                             reversalpotential 0mV and 
+                                             closing-time 80ms and 
+                                             opening-time 5ms and
+                                             eta <ETA> and 
+                                             mg2conc <MG2CONC> and
+                                             gamma <GAMMA>
+                                             
+                                             driven with spike-times at [100, 300, 300]ms
+                                             
+Create a VoltageClamp  called 'VC1' at cell1.soma  at <VCMD>
+Record cell1.V as $V
+Record VC1.i as $VC_I
+Record SYN.Current as $SYN_I
+Record SYN.ConductanceWithoutVDep as $SYN_G
+Run the simulation
+"""
+
+[Units]
+    t = ms
+    GSYN=pS
+    VCMD=mV
+    I=pA
+    
+    V=mV
+    SYN_G=pS
+    SYN_I=pA
+    VC_I=pA
+
+    ETA=/mM
+    MG2CONC=mM
+    GAMMA=/mV
+
+
+[Parameter Values]
+    GSYN=  500, 1000
+    ETA = 0.33, 0.1
+    MG2CONC=1, 0.5
+    GAMMA = 0.06 0.08
+    VCMD = -80, -30, 0
+    
+    
+[Output Format]
+columns = t, V, VC_I, SYN_I, SYN_G
+base_filename = scenario022_GSYN<GSYN>_ETA<ETA>_MG2CONC<MG2CONC>_GAMMA<GAMMA>_VCMD<VCMD>_result
+
+[Check Values]
+eps = 0.05
+
+notes = """ 
+The peak time is 14.787ms after synaptic event.
+At 20ms after the event, the value should have fallen to 0.44857 of tyhe peak value.
+
+PYTHON:
+ETA=0.33; MG2CONC=1.0; GAMMA=0.06; GSYN=500; V=np.array((-80,-30,0)); I = 1./(1+ETA * MG2CONC * np.exp(-GAMMA * V)) *V * GSYN / 1000.; I, I * 0.44857, I*2, I*0.44857*2
+
+"""
+
+expectations_i = """
+
+| ETA      |   MG2CONC       | GAMMA        | GSYN       |  VCMD   |  SYN_I[50:200].min  | VC_I.max[50:200].min | SYN_I[114.787]   |  SYN_I[120]  | SYN_I[314.787]   |  SYN_I[320]  |
+|----------|-----------------|--------------|------------|---------|---------------------|----------------------|------------------|--------------|------------------|--------------|
+| 0.33     | 1.0             | 0.06         | 500        | -80     | -0.973273           | ?                    | -0.973273        | -0.43658107  | ?                | ?
+| 0.33     | 1.0             | 0.06         | 500        | -30     | -5.0060345          | ?                    | -5.0060345       | -2.2455569   | ?                | ?
+| 0.33     | 1.0             | 0.06         | 500        | -0      |  0.000000           | ?                    |  0.0000          | 0.00         | 0.0              | 0.0          |
+
+
+
+
+
+
+
+"""
+
+

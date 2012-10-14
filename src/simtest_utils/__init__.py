@@ -265,19 +265,22 @@ def check_scenario(scenario_file, create_mredoc=True):
             data=  np.loadtxt(filename)
             
             if common_time is None:
-                common_time = data[:,0]
+                common_time = np.arange( data[0,0], data[-1,0],  0.1)
+                #common_time = data[:,0]
                 
             for i in range(n_traces):
                 axes[i].plot( data[:,0], data[:,i+1], label='%s-%s'%(impl, columns[i+1]), linewidth=2, alpha=0.5,  )
     
                 # Extract the min and maxes:
                 data_in_common_time = np.interp(common_time, data[:,0], data[:,i+1])
-                if not data_limits[i]:
+                if data_limits[i] is None:
                     data_limits[i] = data_in_common_time, data_in_common_time
                 else:
                     mn = np.minimum(data_in_common_time,data_limits[i][0])
                     mx = np.maximum(data_in_common_time,data_limits[i][1])
                     data_limits[i] = (mn,mx)
+
+
 
         # Plot the discrepancy:
         for i in range(n_traces):
@@ -319,7 +322,7 @@ def check_scenario(scenario_file, create_mredoc=True):
         return None
 
 
-
+    print ' -- Producing mredoc output'
     import mredoc as mrd
 
     comparison_graphs = mrd.Section('Comparison Graphs',

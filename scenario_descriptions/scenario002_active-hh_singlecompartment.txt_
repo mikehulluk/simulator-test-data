@@ -1,5 +1,7 @@
 title = Scenario 002: Responses of cell with HH conductances to step current injection
 
+scenario_short= scenario002
+
 description = """
 In a simulation from t=0 to t=350
 Create a single compartment neuron cell1:
@@ -37,9 +39,10 @@ Run the simulation
     columns = t, V, i_na, i_k, i_lk, m, n, h
     
     
-    save_as: scenario002_A%d_GBARNA%.1f_EREV <A>, <gBarNa>, <erev_na> 
+    base_filename =  scenario002_A%d_GBARNA%.1f_EREV <A>, <gBarNa>, <erev_na> 
 
 
 [Check Values]
 
+ what = """
  """

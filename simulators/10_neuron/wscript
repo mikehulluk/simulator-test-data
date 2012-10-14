@@ -1,8 +1,1 @@
 
-
-#def generate(ctx):
-    #ctx.recurse('scenario001')
-    #ctx.recurse('scenario020')
-    #ctx.recurse('scenario021')
-    #ctx.recurse('scenario075')
-#    pass

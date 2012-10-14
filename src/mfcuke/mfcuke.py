@@ -478,7 +478,7 @@ handler_lib.register_handler( ActionHandleParent(
 
 def run_scenario_filename(fname, code_path_mode='reduced', only_first_paramtuple=False, plot_results=False, short_run=False):
     
-    if short_run:
+    if short_run is True:
         only_first_paramtuple = True
         
     
@@ -490,8 +490,30 @@ def run_scenario_filename(fname, code_path_mode='reduced', only_first_paramtuple
     param_syms = conf['Parameter Values'].keys()
     param_vals = [ conf['Parameter Values'][sym] for sym in param_syms]
 
-    description_lines = [ l.strip() for l in conf['description'].split('\n')]
-    description_lines = [ l for l in description_lines if l]
+
+    #description_lines = [ l.strip() for l in conf['description'].split('\n')]    
+    #description_lines = [ l for l in description_lines if l]
+    
+    description_lines = []
+    for line in conf['description'].split('\n'):
+        
+        # Skip blank lines:
+        if not line.strip():
+            continue
+            
+        # If it starts with whitespace, then add it to the previous line
+        if re.match(r"""^[\s]+""", line):
+            description_lines[-1] = description_lines[-1] + ' ' + line.strip()
+            continue
+        
+        # Otherwise, just add it
+        description_lines.append(line)
+        
+    description_lines = [ l.strip() for l in description_lines]
+    description_lines = [ re.sub(r"\s+", " ", l) for l in description_lines]
+    
+    
+    
 
     code_paths = handler_lib.build_code_paths(description_lines, mode=code_path_mode)
 

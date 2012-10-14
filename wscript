@@ -27,12 +27,15 @@ def ensure_exists(dir_name):
 
 
 def ensure_directory_structure_setup(ctx):
-    # Make sure the output folders are setup:
+   
+    import waf_util
+    
+     # Make sure the output folders are setup:
     ensure_exists('output')
-    ensure_exists('output/scenario001')
-    ensure_exists('output/scenario020')
-    ensure_exists('output/scenario021')
-    ensure_exists('output/scenario075')
+    for scen in waf_util.get_all_scenarios():
+        ensure_exists('output/%s'%scen)
+   
+    
 
 
     # Look in all the folders in 'simulators' and make sure that thier 'output'

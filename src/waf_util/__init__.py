@@ -49,11 +49,12 @@ def get_all_scenarios():
     """returns a dict 'name'->'filename'"""
     dct = {}
     for scenario_file in glob.glob(Locations.scenario_descriptions() + '/*.txt'):
+        print scenario_file
         name = configobj.ConfigObj(scenario_file)['scenario_short']
         
         # Sanity checking the filename:
         fname_short = os.path.split(scenario_file)[-1]
-        assert fname_short.startswith(name)
+        assert fname_short.startswith(name), 'Inconstistent naming: %s %s' %( fname_short, name)
         
         assert not name in dct
         dct[name] = scenario_file

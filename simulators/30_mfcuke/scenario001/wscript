@@ -7,5 +7,5 @@ import mfcuke
 def generate(ctx):
 
     fname = waf_util.get_all_scenarios()['scenario001']
-    mfcuke.run_scenario_filename(fname, short_run=True)
+    mfcuke.run_scenario_filename(fname, short_run=waf_util.is_short_run())
 
