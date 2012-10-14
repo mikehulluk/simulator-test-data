@@ -36,7 +36,7 @@ def _run_sim(GSYN_in_pS, ESYN_in_mV, GLEAK_in_mS_per_cm2, TCLOSE_in_ms, TOPEN_in
                                 tau_close=TCLOSE_in_ms*U.ms, 
                                 tau_open=TOPEN_in_ms*U.ms,
                                 e_rev=ESYN_in_mV*U.mV, 
-                                weight=GSYN_in_pS*U.pS,
+                                peak_conductance=GSYN_in_pS*U.pS,
                                 popening=1.0,
                                 ).instantiate(cell_location=cell.soma)
     )
@@ -92,6 +92,9 @@ def my_mf_run():
 
     for (GSYN, ESYN, GLEAK, TCLOSE, TOPEN) in itertools.product(GSYNs, ESYNs, GLEAKs, TCLOSEs, TOPENs):
         run_sim(GSYN_in_pS=GSYN, ESYN_in_mV=ESYN, GLEAK_in_mS_per_cm2=GLEAK, TCLOSE_in_ms=TCLOSE, TOPEN_in_ms=TOPEN)
+
+        if waf_util.is_short_run():
+            break
 
     # We ran fine :)
     print 'MF-RUN! OK'

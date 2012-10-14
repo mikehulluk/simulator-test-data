@@ -103,5 +103,8 @@ def my_mf_run():
     for (GLEAK1, GLEAK2, RGJ1, IINJ) in itertools.product(GLEAK1s, GLEAK2s, RGJ1s, IINJs):
         run_sim(GLEAK1_in_mS_per_cm2=GLEAK1, GLEAK2_in_mS_per_cm2=GLEAK2, RGJ1_in_megaohm=RGJ1, IINJ_in_pA=IINJ)
 
+        if waf_util.is_short_run():
+            break
+            
     # We ran fine :)
     print 'MF-RUN! OK'

@@ -476,7 +476,12 @@ handler_lib.register_handler( ActionHandleParent(
 
 
 
-def run_scenario_filename(fname, code_path_mode='reduced', only_first_paramtuple=False, plot_results=False):
+def run_scenario_filename(fname, code_path_mode='reduced', only_first_paramtuple=False, plot_results=False, short_run=False):
+    
+    if short_run:
+        only_first_paramtuple = True
+        
+    
     print 'Reading from file', fname
     conf = configobj.ConfigObj(fname)
 

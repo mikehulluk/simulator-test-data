@@ -85,6 +85,9 @@ def my_mf_run():
 
     for (GSYN, ESYN, GLEAK, TCLOSE) in itertools.product(GSYNs, ESYNs, GLEAKs, TCLOSEs):
         run_sim(GSYN_in_pS=GSYN, ESYN_in_mV=ESYN, GLEAK_in_mS_per_cm2=GLEAK, TCLOSE_in_ms=TCLOSE)
-
+        
+        if waf_util.is_short_run():
+            break
+            
     # We ran fine :)
     print 'MF-RUN! OK'

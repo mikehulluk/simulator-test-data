@@ -256,11 +256,32 @@ def check_scenario(scenario_file, create_mredoc=True):
         f.suptitle('For Parameters: %s' % str(param))
         axes = [f.add_subplot(n_traces,1,i+1) for i in range(n_traces) ]
 
+
+        
         # Plot the data:
+        common_time = None
+        data_limits = [ None]  * n_traces
         for (impl,filename) in impl_data.iteritems():
             data=  np.loadtxt(filename)
+            
+            if common_time is None:
+                common_time = data[:,0]
+                
             for i in range(n_traces):
                 axes[i].plot( data[:,0], data[:,i+1], label='%s-%s'%(impl, columns[i+1]), linewidth=2, alpha=0.5,  )
+    
+                # Extract the min and maxes:
+                data_in_common_time = np.interp(common_time, data[:,0], data[:,i+1])
+                if not data_limits[i]:
+                    data_limits[i] = data_in_common_time, data_in_common_time
+                else:
+                    mn = np.minimum(data_in_common_time,data_limits[i][0])
+                    mx = np.maximum(data_in_common_time,data_limits[i][1])
+                    data_limits[i] = (mn,mx)
+
+        # Plot the discrepancy:
+        for i in range(n_traces):
+            axes[i].fill_between(common_time, data_limits[i][0], data_limits[i][1], color='red', facecolor='red', alpha=0.6)
 
         # Smarten up the axes:
         for i, ax in enumerate(axes):
@@ -293,7 +314,7 @@ def check_scenario(scenario_file, create_mredoc=True):
 
                     table_results[impl, parameter, validator.test_expr] = (result, message, calc_value, validator)
 
-
+    #pylab.show()
     if not create_mredoc:
         return None
 

@@ -20,6 +20,11 @@ def generate(ctx):
     call('nrnivmodl')
     
     call('nrngui -c GLEAK1=0.06666 -c GLEAK2=0.01   -c RGJ1=100 -c IINJ=100 scenario075.hoc -c quit()'.split())
+    
+    if waf_util.is_short_run():
+        return
+
+    
     call('nrngui -c GLEAK1=0.06666 -c GLEAK2=0.0025 -c RGJ1=100 -c IINJ=100 scenario075.hoc -c quit()'.split())
     call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.01   -c RGJ1=100 -c IINJ=100 scenario075.hoc -c quit()'.split())
     call('nrngui -c GLEAK1=0.02857 -c GLEAK2=0.0025 -c RGJ1=100 -c IINJ=100 scenario075.hoc -c quit()'.split())

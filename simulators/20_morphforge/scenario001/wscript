@@ -70,6 +70,10 @@ def my_mf_run():
 
     for (A,C,I,GLK,EREV,VS) in itertools.product(As,Cs,Is,GLKs,EREVs,VSs):
         run_sim(GLK_in_mS_per_cm2=GLK, EREV_in_mV=EREV, I_in_pA=I, AREA_in_um2=A, VS_in_mV=VS, C_in_uF_per_cm2=C )
+        
+        if waf_util.is_short_run():
+            break
+
 
 
     # We ran fine :)

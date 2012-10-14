@@ -5,9 +5,9 @@ In a simulation from t=0 to t=350
 Create a single compartment neuron cell1:
  - area <A>, initial voltage -54.3
  - capacitance 1.0uF/cm2
-Add Hodge-Huxley:Na channels to cell1 with density <gBarNa> and reversalpotential <erev_na> 
-Add Hodge-Huxley:K channels to cell1  with density 36mS/cm2  and reversalpotential -77mV
-Add Hodge-Huxley:LK channels to cell1 with density 0.3mS/cm2 and reversalpotential -54.3
+Add HH52:Na to cell1 with conductance <GLK> and reversalpotential <EREV>
+Add HH52:K channels to cell1  with density 36mS/cm2  and reversalpotential -77mV
+Add HH52:Lk channels to cell1 with density 0.3mS/cm2 and reversalpotential -54.3
 Inject cell1 with step current <I> from t=100ms until t=250ms
 Record cell1.V as $V
 Record cell1.Na.i as $i_na

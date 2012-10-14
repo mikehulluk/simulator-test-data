@@ -41,6 +41,10 @@ def ensure_output_links_setup():
 
 
 
+
+
+
+
 def get_all_scenarios():
     """returns a dict 'name'->'filename'"""
     dct = {}
@@ -56,10 +60,6 @@ def get_all_scenarios():
         
     return dct
         
-
-        
-
-
 
 def get_target_simulator_dirs():
 
@@ -96,4 +96,10 @@ def get_target_scenarios():
     return sorted(scens)
         
     
+def is_short_run():
+    if 'STD_SHORT' in os.environ:
+        return True
+    return False
+    
+    return True
     
