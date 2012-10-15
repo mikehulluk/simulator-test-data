@@ -320,7 +320,7 @@ def check_scenario(scenario_file, create_mredoc=True):
     #pylab.show()
     if not create_mredoc:
         return None
-
+    #pylab.show()
 
     print ' -- Producing mredoc output'
     import mredoc as mrd

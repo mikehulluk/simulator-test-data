@@ -565,6 +565,7 @@ def run_scenario_filename(fname, code_path_mode='reduced', only_first_paramtuple
                 mf.TagViewer(ctx.res, show=False)
             #break
 
+            #pylab.show()
 
 
 
