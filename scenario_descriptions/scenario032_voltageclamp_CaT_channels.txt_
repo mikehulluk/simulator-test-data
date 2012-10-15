@@ -1,0 +1,80 @@
+
+title = 'Voltage Clamp responses of Low Voltage Transient Calcium Channel ()'
+scenario_short= scenario031
+
+description = """
+
+CHANNEL TAKEN FROM McCormick,Huguenard at Strawbridge 1992', Koch Pg 216.
+
+In a simulation lasting 600ms
+Create a single compartment neuron 'cell1' with area 1000um2 and initialvoltage -50mV and capacitance 1.0 uF/cm2
+Add HH52:Na to cell1 with conductance <GK> and reversalpotential -80mV
+Create a VoltageClamp  called 'VC1' at cell1.soma  at '-50mV for 100ms THEN <VCMD> FOR 300mS
+Record cell1.V as $V
+Record VC1.i as $VC_I
+Record cell1.K.n as $N
+Record cell1.K.g as $G
+Record cell1.i as $I
+Run the simulation
+"""
+
+
+[Units]
+    t = ms
+    VCMD=mV
+
+    GK=mS/cm2
+
+    V=mV
+    VC_I=pA
+    N=
+    G=mS/cm2
+    I=mA/cm2
+
+
+[Parameter Values]
+    GK = 36, 50
+    VCMD = -80, -60, -40, -20, 0, 20, 40, 60, 80
+
+
+
+
+
+[Output Format]
+columns = t, V, VC_I, SYN_I, SYN_G
+base_filename = scenario022_GSYN<GSYN>_ETA<ETA>_MG2CONC<MG2CONC>_GAMMA<GAMMA>_VCMD<VCMD>_result
+
+[Check Values]
+eps = 0.005
+
+notes = """
+#m:
+
+
+
+
+"""
+
+
+
+# Steady State  of the state variables at different values:
+expectations_i = """
+
+|  GNA    |      VCMD    |  N[300:400].mean.()  |
+|---------|--------------|----------------------|
+
+"""
+
+expectations_ii = """
+|  GNA    |     VCMD    |  G[300:400].mean()  |  I[300:400].mean() |  VC_I[300:400].mean()  |
+|---------|-------------|---------------------|--------------------|------------------------|
+"""
+
+
+expectations_iii = """
+
+|  GNA    |   VCMD    |  M[102]     |
+|---------|-----------|-------------|
+
+"""
+
