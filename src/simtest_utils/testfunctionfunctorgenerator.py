@@ -5,11 +5,49 @@ import scipy.integrate as integrate
 import testfunctionparser
 
 
+
+class EPSEquality(object):
+    def __init__(self, eps_str):
+        self.eps_str = eps_str
+        self.conds = []
+
+        self.abs_err = None
+        self.rel_err = None
+        toks = self.eps_str.split('or')
+        for t in toks:
+            if '%' in t:
+                assert not self.rel_err
+                self.rel_err = float(t.replace("%",'') ) /100
+            else:
+                assert not self.abs_err
+                self.abs_err = float(t)
+        assert self.abs_err is not None
+
+        
+
+    def compare(self, exp, got):
+        """Returns True if they are the same value"""
+
+        # Is the absolute tolerance satisfied:
+        if np.fabs( exp-got) < self.abs_err:
+            return True
+
+        # Is the relative tolerance satisfied:
+        if self.rel_err is not None:
+            dx= np.fabs(exp*self.rel_err)
+            if ( exp-dx < got < exp+dx ):
+                return  True
+        return False
+
+    def __str__(self):
+        return 'eps: %s %s' % ( self.abs_err, ( '( or %d%%)' % round(self.rel_err*100) if self.rel_err is not None else '') )
+
+
 class TableTestFunctor(object):
     def __init__(self, test_expr, expected_value, eps):
         self.test_expr=test_expr
         self.expected_value = expected_value
-        self.eps = eps
+        self.eps = EPSEquality(eps)
 
         # Build the data object
         self.condition_info = testfunctionparser.parse_expr(test_expr)
@@ -23,8 +61,9 @@ class TableTestFunctor(object):
     def __call__(self, data_matrix, colnames):
         data_slice = self._get_data_slice(data_matrix=data_matrix, colnames=colnames)
         result = self._apply_operation(data_slice)
-        msg =  '%s ==> %f == %f [Res==Expected] (eps:%f)' % (self.test_expr, result, self.expected_value, self.eps)
-        return np.fabs(result - self.expected_value) < self.eps, msg, result #"Found: %f Expected: %f"%(result, self.expected_value)
+        msg =  '%s ==> %f == %f [Res==Expected] (%s)' % (self.test_expr, result, self.expected_value, str(self.eps) )
+        return self.eps.compare(exp=self.expected_value, got=result), msg, result 
+        #return np.fabs(result - self.expected_value) < self.eps, msg, result 
 
 
     def _get_data_slice(self, data_matrix, colnames):

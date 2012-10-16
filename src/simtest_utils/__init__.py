@@ -101,7 +101,7 @@ def parse_table(table_str, ParamTuple, variables, eps):
     table_lines = [[(tok if tok !='?' else None) for tok in line] for line in table_lines]
     header, data= table_lines[0], table_lines[1:]
 
-    # The header can have an optional '(eps:XXX)' in it. So lets parse that out:
+    # The header can have an optional '(eps=XXX)' in it. So lets parse that out:
     header_eps = {}
     re_header_eps = re.compile(r"""\(eps=(?P<eps>[^)*]*)\)""")
     for i,h in enumerate(header):
@@ -109,7 +109,7 @@ def parse_table(table_str, ParamTuple, variables, eps):
         if m:
             new_header = re_header_eps.sub('', h).strip()
             header[i] = new_header
-            header_eps[new_header] = float( m.groupdict()['eps'] )
+            header_eps[new_header] =  m.groupdict()['eps']
         else:
             header_eps[h] = eps
     header = [h.strip() for h in header]
@@ -231,11 +231,11 @@ def check_scenario(scenario_file, create_mredoc=True):
     # Look at the expect-values table:
     if 'Check Values' in config:
         print ' -- Building Validation Table'
-        eps = float( config['Check Values']['eps'] )
+        eps = config['Check Values']['eps'] 
 
         expectation_tables = [ k for k in config['Check Values'] if k.startswith('expect') and not k.endswith('_eps') ]
         for tbl_name in expectation_tables:
-            local_eps = float( config['Check Values'].get(tbl_name+'_eps') or eps )
+            local_eps = config['Check Values'].get(tbl_name+'_eps') or eps
             print '    * Loading expectations:', tbl_name
             table_str = config['Check Values'][tbl_name]
             vals = parse_table(table_str, ParamTuple, variables=expected_variables,eps=local_eps)
