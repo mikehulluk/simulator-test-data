@@ -1,0 +1,125 @@
+
+title = 'Voltage Clamp responses of HH Types'
+scenario_short= scenario030
+
+description = """
+In a simulation lasting 600ms
+Create a single compartment neuron 'cell1' with area 2000um2 and initialvoltage -50mV and capacitance 1.0 uF/cm2
+Add HH52:Na to cell1 with conductance <GNA> and reversalpotential <EREV>
+Create a VoltageClamp  called 'VC1' at cell1.soma  at '-50mV for 100ms THEN <VCMD> FOR 300mS
+Record cell1.V as $V
+Record VC1.i as $VC_I
+Record cell1.Na.m as $M
+Record cell1.Na.h as $H
+Record cell1.Na.g as $G
+Record cell1.i as $I
+Run the simulation
+"""
+
+
+[Units]
+    t = ms
+    VCMD=mV
+
+    GNA=mS/cm2
+    EREV=mV
+
+    V=mV
+    VC_I=pA
+    M=
+    H=
+    G=mS/cm2
+    I=mA/cm2
+
+
+[Parameter Values]
+    GNA = 120, 200
+    EREV = 50, 0
+    VCMD = -80, -60, -40, -20, 0, 20, 40, 60, 80
+
+
+[Output Format]
+columns = t, V, VC_I, M, H, G, I
+base_filename = scenario030_GNA<GNA>_EREV<EREV>_VCMD<VCMD>_result
+
+[Check Values]
+eps = 0.005
+
+notes = """
+m:
+
+
+import numpy as np
+import pylab as pl
+V=np.array( (-80,-40,0));
+alpha_m = 0.1*(V+40.0)/(1.0-np.exp( -(V+40.0)/10.0) ); beta_m = 4.0 * np.exp(-(V+65.0)/18.0); inf_m=alpha_m/(alpha_m+beta_m); tau_m=1/(alpha_m+beta_m); tau_m, inf_m
+alpha_h = 0.07 * np.exp( -(V+65.)/20.); beta_h = 1.0/(1.0+np.exp( -(V+35.)/10.)); inf_h=alpha_h/(alpha_h+beta_h); tau_h=1/(alpha_h+beta_h); tau_h, inf_h
+
+m^3 * h:
+inf_m**3 * inf_h
+
+1000um2 * 1mA/cm2 = 10nA = 10,000pA
+
+inf_m50: (-50mV) 0.25081207825378871
+inf_h50: (-50mV) 0.15344320964103961
+mt102 = inf_m - (inf_m-inf_m50)*np.exp(-2./tau_m)
+
+
+
+"""
+
+
+
+# Steady State  of the state variables at different values:
+expectations_i = """
+
+|  GNA    |    EREV     |    VCMD    |  M[300:400].mean |  H[300:400].mean   |
+|---------|-------------|------------|------------------|--------------------|
+| 120,200 |   50,0      |    -80     |  0.00804324      |   9.30976545e-01   |
+| 120,200 |   50,0      |    -60     |   0.09364195     |   4.18150526e-01   |
+#| 120,200 |   50,0      |    -40     |                  |   5.04414922e-02   |
+| 120,200 |   50,0      |    -20     |  0.87569355      |   8.94348028e-03   |
+| 120,200 |   50,0      |      0     | 0.97415861       |   2.78835943e-03   |
+| 120,200 |   50,0      |     20     |  0.99411923      |   1.00157285e-03   |
+| 120,200 |   50,0      |     40     |  0.99853848      |   3.67394422e-04   |
+| 120,200 |   50,0      |     60     | 0.99961458       |   1.35123644e-04   |
+
+"""
+
+expectations_ii = """
+|  GNA    |    EREV     |    VCMD    |  G[300:400].mean   |  I[300:400].mean   | VC_I[300:400].mean (eps=0.05) |
+|---------|-------------|------------|--------------------|--------------------|-------------------------------|
+| 120     |   50        |    -80     |   5.81316444e-05   |   -7.55711378e-06  |  -0.0755711378                |
+| 120     |   80        |    -80     |   5.81316444e-05   |   -9.30106311e-06  |  -0.0930106311                |
+| 200     |   50        |    -80     |   9.68860740e-05   |   -1.25951896e-05  |  -0.1259518962825337          |
+| 200     |   80        |    -80     |   9.68860740e-05   |   -1.55017718e-05  |  -0.15501771850157997         |
+#| 120     |   50        |    -40     |       |            |
+#| 120     |   80        |    -40     |       |            |
+#| 200     |   50        |    -40     |       |            |
+#| 200     |   00        |    -40     |       |            |
+| 120     |   50        |    -20     |  7.20682949e-01     |  -5.04478064e-02  |  -504.478064                  |
+| 120     |   80        |    -20     |  7.20682949e-01     |  -7.20682949e-02  |  -720.682949                  |
+| 200     |   50        |    -20     |  1.2011382476170951 |  -0.08407967733   |  -840.796773                  |
+| 200     |   80        |    -20     |  1.2011382476170951 |  -0.12011382476   | -1201.138247                  |
+| 120     |   50        |    0       |  3.09327847e-01     |  -1.54663923e-02  |  -154.663923                  |
+| 120     |   80        |    0       |  3.09327847e-01     |  -2.47462277e-02  |  -247.462277                  |
+| 200     |   50        |    0       |  0.5155464110       |  -0.02577732055   |  -257.773205                  |
+| 200     |   80        |    0       |  0.5155464110       |  -0.04124371288   |  -412.437128                  |
+#
+"""
+
+
+expectations_iii = """
+
+|  GNA    |    EREV     |    VCMD    |  M[102]     |  H[102]      |
+|---------|-------------|------------|-------------|--------------|
+| 120     |   50        |    -80     |  0.0080432  |  0.36544129    |
+| 120     |   50        |    -60     |  0.0938381  | 0.21420024     |
+#| 120     |   50        |    -40     |             |      |0.0969462
+| 120     |   50        |    -20     |  0.8725201  |  0.03669728    |
+| 120     |   50        |      0     |  0.9739902  |   0.02429125   |
+| 120     |   50        |     20     |  0.9941151  |   0.02175944   |
+| 120     |   50        |     40     |  0.9985384  |  0.02109164    |
+
+"""
+

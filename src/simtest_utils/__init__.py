@@ -236,7 +236,7 @@ def check_scenario(scenario_file, create_mredoc=True):
         expectation_tables = [ k for k in config['Check Values'] if k.startswith('expect') and not k.endswith('_eps') ]
         for tbl_name in expectation_tables:
             local_eps = float( config['Check Values'].get(tbl_name+'_eps') or eps )
-            print '    * Loading expectations:', k
+            print '    * Loading expectations:', tbl_name
             table_str = config['Check Values'][tbl_name]
             vals = parse_table(table_str, ParamTuple, variables=expected_variables,eps=local_eps)
 
@@ -318,6 +318,7 @@ def check_scenario(scenario_file, create_mredoc=True):
                     table_results[impl, parameter, validator.test_expr] = (result, message, calc_value, validator)
 
     #pylab.show()
+    create_mredoc=False
     if not create_mredoc:
         return None
     #pylab.show()

@@ -1,0 +1,112 @@
+
+title = 'Voltage Clamp responses of HH Types (K)'
+scenario_short= scenario031
+
+description = """
+In a simulation lasting 600ms
+Create a single compartment neuron 'cell1' with area 2000um2 and initialvoltage -50mV and capacitance 1.0 uF/cm2
+Add HH52:Na to cell1 with conductance <GK> and reversalpotential -80mV
+Create a VoltageClamp  called 'VC1' at cell1.soma  at '-50mV for 100ms THEN <VCMD> FOR 300mS
+Record cell1.V as $V
+Record VC1.i as $VC_I
+Record cell1.K.n as $N
+Record cell1.K.g as $G
+Record cell1.i as $I
+Run the simulation
+"""
+
+
+[Units]
+    t = ms
+    VCMD=mV
+
+    GK=mS/cm2
+
+    V=mV
+    VC_I=pA
+    N=
+    G=mS/cm2
+    I=mA/cm2
+
+
+[Parameter Values]
+    GK = 36, 50
+    VCMD = -80, -60, -40, -20, 0, 20, 40, 60, 80
+
+
+
+
+
+[Output Format]
+columns = t, V, VC_I, N, G, I
+
+base_filename = scenario031_GK<GK>_VCMD<VCMD>_result
+
+[Check Values]
+eps = 0.005
+
+notes = """
+#m:
+V = np.array((-80, -60, -40., -20, 0, 20, 40, 60));
+alpha_n = 0.01 * (V+55.) / (1.0 - np.exp( -(V+55.)/10.))
+beta_n = 0.125 * np.exp( -(V+65.0)/80.)
+inf_n = alpha_n/(alpha_n+beta_n);
+tau_n=1/(alpha_n+beta_n);
+g=inf_n **4 * 36;
+i=g*(-80-V);
+inf_n, g, i, i*20000, V
+
+
+
+
+"""
+
+
+
+# Steady State  of the state variables at different values:
+expectations_i = """
+
+|  GK    |      VCMD    |  N[300:400].mean  |
+|---------|--------------|------------------|
+| 36,50   |      -80     |    0.12912671    |
+| 36,50   |      -60     |    0.39626825    |
+| 36,50   |      -40     |    0.67859097    |
+| 36,50   |      -20     |    0.83517846    |
+| 36,50   |        0     |    0.90872783    |
+| 36,50   |       20     |    0.94556693    |
+| 36,50   |       40     |    0.96579973    |
+| 36,50   |       60     |    0.97772391    |
+
+"""
+
+expectations_ii = """
+|  GK    |     VCMD    |  G[300:400].mean (eps=0.05)  |  I[300:400].mean (eps=0.05) |  VC_I[300:400].mean  (eps=10% or 0.1)  |
+|---------|-------------|-----------------------------|-----------------------------|---------------------------------|
+| 36      |     -80     |  1.00084499e-02             |   0.                        |      0.                         |
+| 50      |     -80     |  1.39006249e-02             |   0.                        |      0.                         |
+| 36      |     -40     |  7.63369521e+00             |  -0.30534781                |   6106.95617156                 |
+| 50      |     -40     |  1.06023545e+01             |  -0.42409418                |   8481.88357162                 |
+| 36      |     -20     |  1.75153833e+01             |  -1.050923                  |  21018.45998653                 |
+| 50      |     -20     |  2.43269213e+01             |  -1.45961528                |  29192.30553685                 |
+| 36      |     0       |  2.45492264e+01             |  -1.96393811                |  39278.76226527                 |
+| 50      |     0       |  3.40961478e+01             |  -2.72769182                |  54553.83647954                 |
+| 36      |     20      |  2.87787278e+01             |  -2.87787278                |  57557.45560988                 |
+| 50      |     20      |  3.99704553e+01             |  -3.99704553                |  79940.91056927                 |
+
+"""
+
+
+_expectations_iii = """
+
+|  GNA    |   VCMD    |  M[102]     |
+|---------|-----------|-------------|
+| 120     |     -80     |  1.3239e-06 |
+| 120     |     -60     |  2.1526e-05 |
+| 120     |     -40     |  3.3057e-04 |
+| 120     |     -20     |  4.5816e-03 |
+| 120     |       0     |  4.9172e-02 |
+| 120     |      20     |  3.0727e-01 |
+#| 120     |      40     |   ?         |
+
+"""
+

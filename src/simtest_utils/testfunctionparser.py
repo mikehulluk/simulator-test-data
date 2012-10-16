@@ -57,6 +57,9 @@ def t_NUMBER(t):
 
 def t_error(t):
         print "Illegal character '%s'" % t.value[0]
+        print t.__dict__
+        print t.lexer.__dict__
+        print t.lexer.lexdata
         assert False
         t.lexer.skip(1)
 

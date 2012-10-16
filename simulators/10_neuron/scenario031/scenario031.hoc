@@ -1,0 +1,119 @@
+load_file("nrngui.hoc")
+
+// Set from the commandline:
+// GNA = 
+// EREV = 
+// VCMD = 
+
+
+
+// CONSTANTS
+A = 2000
+
+create soma
+access soma
+soma insert hh
+
+length = 100
+soma {
+    L = length
+    diam = A / (length * PI)
+    cm = 1.0 
+    //(NEURON works in S/cm2 and mV (G_LEAK is in mS/cm2) )
+    gnabar_hh = 0.0
+    gkbar_hh = GK / 1000
+    gl_hh = 0.0
+    
+    ek=-80
+}
+
+
+
+
+objref vc
+vc = new SEClamp(0.5)
+vc.dur1 = 100
+vc.dur2 = 3000
+vc.amp1 = -50
+vc.amp2 = VCMD
+vc.rs=0.001
+
+
+
+
+proc initspikes(){
+   soma.v = -50
+}
+
+
+// Setup the recording:
+objref vecv, vect, vec_vc_i, vecn, vecg, vec_na_i
+
+vect = new Vector()
+vecv = new Vector()
+
+vec_vc_i = new Vector()
+vecn = new Vector()
+vecg = new Vector()
+vec_na_i = new Vector()
+
+
+vect.record(&t)
+vecv.record(&soma.v(0.5))
+vec_vc_i.record(&vc.i)
+vecn.record(&soma.n_hh(0.5))
+vecg.record(&soma.gk_hh(0.5))
+vec_na_i.record(&soma.ik(0.5))
+
+// Run the simulation:
+tstop = 600
+
+
+objref fih
+fih = new FInitializeHandler("initspikes()")
+cvode.atol(1e-12)
+cvode.rtol(1e-12)
+
+run() 
+
+
+
+
+for i=0, vect.size()-1 {
+    // NEURON works in nA and uS, we want pA and pS, so rescale
+
+    // NEURON nA -> Results in pA
+    vec_vc_i.x[i] = vec_vc_i.x[i] * (1e3)
+
+    // NEURON S/cm2 -> Results in mS/cm2
+    vecg.x[i] = vecg.x[i] * (1e3) 
+    
+    // NEURON mA/cm2 -> Results in mA/cm2
+    //vec_na_i.x[i] = vec_na_i.x[i] * (1) 
+}
+
+
+
+strdef filename
+//sprint(filename,"output/scenario020_ESYN%lf_GSYN%lf_GLEAK%lf_TCLOSE%lf_result_NEURONHOC", ESYN, GSYN, GLEAK, TCLOSE)
+sprint(filename,"output/scenario031_GK%lf_VCMD%lf_result_NEURONHOC", GK, VCMD)
+
+// Save the data to a file:
+objref savdata
+savdata = new File()
+savdata.wopen(filename)
+savdata.printf("#t V\n")
+
+objref tempmatrix
+tempmatrix = new Matrix()
+tempmatrix.resize(vecv.size(),6)
+tempmatrix.setcol(0, vect)
+tempmatrix.setcol(1, vecv)
+tempmatrix.setcol(2, vec_vc_i)
+tempmatrix.setcol(3, vecn)
+tempmatrix.setcol(4, vecg)
+tempmatrix.setcol(5, vec_na_i)
+
+tempmatrix.fprint(0,savdata, " %g")
+
+savdata.close()

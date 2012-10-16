@@ -1,0 +1,141 @@
+
+#import os
+import itertools
+import numpy as np
+
+import waf_util
+
+
+@waf_util.chdirdecorator
+def generate(ctx):
+    my_mf_run()
+
+
+
+
+
+
+#def _run_sim(GSYN_in_pS, ESYN_in_mV, GLEAK_in_mS_per_cm2, TCLOSE_in_ms, TOPEN_in_ms):
+#    import morphforge.stdimports as mf
+#    import morphforgecontrib.stdimports as mfc
+#    from morphforge.stdimports import units as U
+#
+#    # The simulation:
+#    env = mf.NEURONEnvironment()
+#    sim = env.Simulation(cvode=True)
+#    cell = sim.create_cell(area=10000 * U.um2, initial_voltage=-50*U.mV)
+#    lk_chl = env.Channel(mfc.StdChlLeak,
+#                    conductance=GLEAK_in_mS_per_cm2 * U.mS/U.cm2,
+#                    reversalpotential=-50*U.mV )
+#    cell.apply_channel(lk_chl)
+#    cell.set_passive(mf.PassiveProperty.SpecificCapacitance, (1e-3) * U.uF / U.cm2)
+#
+#    syn = sim.create_synapse(
+#        trigger = env.SynapticTrigger(mfc.SynapticTriggerAtTimes, time_list=[100,300,300]*U.ms),
+#        postsynaptic_mech= env.PostSynapticMechTemplate(mfc.PostSynapticMech_Exp2Syn_Base,
+#                                tau_close=TCLOSE_in_ms*U.ms,
+#                                tau_open=TOPEN_in_ms*U.ms,
+#                                e_rev=ESYN_in_mV*U.mV,
+#                                peak_conductance=GSYN_in_pS*U.pS,
+#                                popening=1.0,
+#                                ).instantiate(cell_location=cell.soma)
+#    )
+#
+#
+#    sim.record(cell, name='V')
+#    sim.record(syn, name='SYNG', what=mf.StandardTags.Conductance)
+#    sim.record(syn, name='SYNI', what=mf.StandardTags.Current)
+#
+#    res = sim.run()
+#    return res
+#
+#
+#
+#
+#
+#
+#
+#
+def _run_sim(GSYN_in_pS, ETA_in_per_mM, MG2CONC_in_mM, GAMMA_in_per_mV, VCMD_in_mV):
+    import morphforge.stdimports as mf
+    import morphforgecontrib.stdimports as mfc
+    from morphforge.stdimports import units as U
+
+    # The simulation:
+    env = mf.NEURONEnvironment()
+    sim = env.Simulation(cvode=True, tstop=1200*U.ms) #, dt=0.1 * U.ms)
+    cell = sim.create_cell(area=0.0001 * U.cm2, initial_voltage=-50*U.mV)
+    lk_chl = env.Channel(mfc.StdChlLeak,
+                    conductance=0.03333333 * U.mS/U.cm2,
+                    reversalpotential=-50*U.mV )
+    cell.apply_channel(lk_chl)
+    cell.set_passive(mf.PassiveProperty.SpecificCapacitance, (1e-3) * U.uF / U.cm2)
+
+    syn = sim.create_synapse(
+        trigger = env.SynapticTrigger(mfc.SynapticTriggerAtTimes, time_list=[100, 1100, 1100]*U.ms),
+        postsynaptic_mech= env.PostSynapticMechTemplate(mfc.PostSynapticMech_Exp2SynNMDA_Base,
+                                tau_close=80*U.ms,
+                                tau_open= 5*U.ms,
+                                e_rev=0*U.mV,
+                                peak_conductance=GSYN_in_pS*U.pS,
+                                popening=1.0,
+                                eta=ETA_in_per_mM * U.per_mM,
+                                gamma=GAMMA_in_per_mV * U.per_mV,
+                                mg2conc=MG2CONC_in_mM * U.mM,
+                                ).instantiate(cell_location=cell.soma)
+    )
+
+    vc = sim.create_voltageclamp(name='VC', cell_location=cell.soma, amp1=VCMD_in_mV * U.mV, amp2=VCMD_in_mV * U.mV, amp3=VCMD_in_mV * U.mV, dur1=2000*U.ms, dur2=10*U.ms, dur3=10*U.ms)
+
+    sim.record(cell, name='V')
+    sim.record(syn, name='SYN_I', what=mf.StandardTags.Current)
+    sim.record(syn, name='SYN_G', what=mf.StandardTags.Conductance)
+    sim.record(vc, name='VC_I', what=mf.StandardTags.Current)
+
+
+    return sim.run()
+
+
+def run_sim(GSYN_in_pS, ETA_in_per_mM, MG2CONC_in_mM, GAMMA_in_per_mV,VCMD_in_mV):
+    res = _run_sim(GSYN_in_pS=GSYN_in_pS, ETA_in_per_mM=ETA_in_per_mM, MG2CONC_in_mM=MG2CONC_in_mM, GAMMA_in_per_mV=GAMMA_in_per_mV, VCMD_in_mV=VCMD_in_mV)
+
+    V = res.get_trace('V')
+    VC_I = res.get_trace("VC_I")
+    SYN_I = res.get_trace("SYN_I")
+    SYN_G = res.get_trace("SYN_G")
+    time = V.time_pts_ms
+
+
+    d = np.vstack((time,
+                    V.data_pts_in('mV'),
+                    VC_I.data_pts_in('pA'),
+                    SYN_I.data_pts_in('pA'),
+                    SYN_G.data_pts_in('pS'),
+                     )).T
+
+
+    fname_tmpl = "output/scenario022_GSYN{GSYN}_ETA{ETA}_MG2CONC{MG2CONC}_GAMMA{GAMMA}_VCMD{VCMD}_result_morphforge"
+    fname = fname_tmpl.format(GSYN=GSYN_in_pS, ETA=ETA_in_per_mM, MG2CONC=MG2CONC_in_mM, GAMMA=GAMMA_in_per_mV, VCMD=VCMD_in_mV)
+    np.savetxt(fname, d)
+
+
+
+def my_mf_run():
+
+
+    GSYNs = [500, 1000]             # In pS
+    ETAs =  [0.33, 0.5]             # In /mM
+    MG2CONCs = [1,0.5]                 # In mM
+    GAMMAs = [0.06, 0.08]            # In /mV
+    VCMDs = [ -80, -30, 0]           # In mV
+
+    for (GSYN, ETA, MG2CONC, GAMMA, VCMD) in itertools.product(GSYNs, ETAs, MG2CONCs, GAMMAs, VCMDs):
+        run_sim(GSYN_in_pS=GSYN, ETA_in_per_mM=ETA, MG2CONC_in_mM=MG2CONC, GAMMA_in_per_mV=GAMMA, VCMD_in_mV=VCMD)
+
+        if waf_util.is_short_run():
+            break
+
+
+
+    # We ran fine :)
+    print 'MF-RUN! OK'
