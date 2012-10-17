@@ -17,7 +17,7 @@ class EPSEquality(object):
         for t in toks:
             if '%' in t:
                 assert not self.rel_err
-                self.rel_err = float(t.replace("%",'') ) /100
+                self.rel_err = float(t.replace("%",'') ) /100.
             else:
                 assert not self.abs_err
                 self.abs_err = float(t)
@@ -40,7 +40,7 @@ class EPSEquality(object):
         return False
 
     def __str__(self):
-        return 'eps: %s %s' % ( self.abs_err, ( '( or %d%%)' % round(self.rel_err*100) if self.rel_err is not None else '') )
+        return 'eps: %s %s' % ( self.abs_err, ( '( or %d%%)' % round(self.rel_err*100.) if self.rel_err is not None else '') )
 
 
 class TableTestFunctor(object):

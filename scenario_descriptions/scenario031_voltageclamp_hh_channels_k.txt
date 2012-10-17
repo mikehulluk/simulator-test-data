@@ -1,9 +1,9 @@
 
-title = 'Voltage Clamp responses of HH Types (K)'
+title = 'Voltage Clamp responses of HH Type-Channels (K)'
 scenario_short= scenario031
 
 description = """
-In a simulation lasting 600ms
+In a simulation lasting 500ms
 Create a single compartment neuron 'cell1' with area 2000um2 and initialvoltage -50mV and capacitance 1.0 uF/cm2
 Add HH52:Na to cell1 with conductance <GK> and reversalpotential -80mV
 Create a VoltageClamp  called 'VC1' at cell1.soma  at '-50mV for 100ms THEN <VCMD> FOR 300mS
@@ -57,6 +57,9 @@ i=g*(-80-V);
 inf_n, g, i, i*20000, V
 
 
+inf_n50 = 0.55081431408405312
+nt102 = inf_n - (inf_n-inf_n50)*np.exp(-2./tau_n)
+
 
 
 """
@@ -80,7 +83,7 @@ expectations_i = """
 """
 
 expectations_ii = """
-|  GK    |     VCMD    |  G[300:400].mean (eps=0.05)  |  I[300:400].mean (eps=0.05) |  VC_I[300:400].mean  (eps=0.1% or 0.1)  |
+|  GK    |     VCMD    |  G[300:400].mean (eps=0.05)  |  I[300:400].mean (eps=0.05) |  VC_I[300:400].mean  (eps=0.5% or 0.1)  |
 |---------|-------------|-----------------------------|-----------------------------|---------------------------------|
 | 36      |     -80     |  1.00084499e-02             |   0.                        |      0.                         |
 | 50      |     -80     |  1.39006249e-02             |   0.                        |      0.                         |
@@ -96,17 +99,17 @@ expectations_ii = """
 """
 
 
-_expectations_iii = """
+expectations_iii = """
 
-|  GNA    |   VCMD    |  M[102]     |
+|  GK     |   VCMD    |  N[102]     |
 |---------|-----------|-------------|
-| 120     |     -80     |  1.3239e-06 |
-| 120     |     -60     |  2.1526e-05 |
-| 120     |     -40     |  3.3057e-04 |
-| 120     |     -20     |  4.5816e-03 |
-| 120     |       0     |  4.9172e-02 |
-| 120     |      20     |  3.0727e-01 |
-#| 120     |      40     |   ?         |
+| 36,50   |   -80     |  0.42739532
+| 36,50   |   -60     |  0.50100913
+| 36,50   |   -40     |  0.60626271
+| 36,50   |   -20     |  0.71535571
+| 36,50   |     0     |  0.80257916
+| 36,50   |    20     |  0.86484328
+| 36,50   |    40     |  0.90777818
 
 """
 

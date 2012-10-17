@@ -1,12 +1,12 @@
 
-title = 'Voltage Clamp responses of HH Types'
+title = 'Voltage Clamp responses of HH Type-Channels (Na)'
 scenario_short= scenario030
 
 description = """
 In a simulation lasting 600ms
-Create a single compartment neuron 'cell1' with area 2000um2 and initialvoltage -50mV and capacitance 1.0 uF/cm2
+Create a single compartment neuron 'cell1' with area 1000um2 and initialvoltage -50mV and capacitance 1.0 uF/cm2
 Add HH52:Na to cell1 with conductance <GNA> and reversalpotential <EREV>
-Create a VoltageClamp  called 'VC1' at cell1.soma  at '-50mV for 100ms THEN <VCMD> FOR 300mS
+Create a VoltageClamp  called 'VC1' at cell1.soma  at -50mV for 100ms THEN <VCMD> FOR 300mS
 Record cell1.V as $V
 Record VC1.i as $VC_I
 Record cell1.Na.m as $M
@@ -63,9 +63,6 @@ inf_m**3 * inf_h
 inf_m50: (-50mV) 0.25081207825378871
 inf_h50: (-50mV) 0.15344320964103961
 mt102 = inf_m - (inf_m-inf_m50)*np.exp(-2./tau_m)
-
-
-
 """
 
 

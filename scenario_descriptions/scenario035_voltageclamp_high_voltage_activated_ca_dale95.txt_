@@ -1,8 +1,73 @@
- 
- 
-title = Blah
-scenario_short= scenario031
+
+title = 'Voltage Clamp responses of Dale95:Ca'
+scenario_short= scenario035
 
 description = """
+In a simulation lasting 500ms
+Create a single compartment neuron 'cell1' with area 2000um2 and initialvoltage -50mV and capacitance 1.0 uF/cm2
+Add Dale95:Ca to cell1 with permeability <PCA> and 
+                            intracellular-concentration <CAI> and
+                            extracellular-concentration <CAO> and
+                            temperature 300K
+Create a VoltageClamp  called 'VC1' at cell1.soma  at '-50mV for 100ms THEN <VCMD> FOR 300mS
+Record cell1.V as $V
+Record VC1.i as $VC_I
+Record cell1.K.m as $M
+Record cell1.i as $ICA
 Run the simulation
 """
+
+[Units]
+    t = ms
+    
+    VCMD=mV
+    PCA = cm/s
+    CAI = nM
+    CAO = mM
+    
+    V=mV
+    VC_I=pA
+    M=
+    I=mA/cm2
+
+
+
+[Parameter Values]
+    CAI  = 
+    VCMD = -80, -60, -40, -20, 0, 20
+    PCA  =
+    CAI  = 100, 150
+    CAO  = 10, 20
+
+
+
+
+
+[Output Format]
+columns = t, V, VC_I, M, ICA
+
+base_filename = scenario031_PCA<PCA>_CAI<CAI>_CAO<CAO>_VCMD<VCMD>_results_
+
+[Check Values]
+eps = 0.005
+
+
+
+
+# Check the steady state values of m:
+expectations_ = """
+|  VCMD     |   PCA      |  CAI    |  CAO  |  M[300:400].mean  |
+|-----------|------------|---------|-------|-------------------|
+|-80.0      |            | 100,150 | 10,20 |   0.0005578       |
+|-60.0      |            | 100,150 | 10,20 |   0.0034025       |
+|-40.0      |            | 100,150 | 10,20 |   0.0241373       |
+|-20.0      |            | 100,150 | 10,20 |   0.2208706       |
+|0.0        |            | 100,150 | 10,20 |   0.6644004       |
+|20.0       |            | 100,150 | 10,20 |   0.9442154       |
+|40.0       |            | 100,150 | 10,20 |   0.9916154       |
+""":wq
+
+
+
+
+
