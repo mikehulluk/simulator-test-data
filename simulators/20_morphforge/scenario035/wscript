@@ -1,0 +1,139 @@
+
+#import os
+import itertools
+import numpy as np
+
+import waf_util
+
+
+@waf_util.chdirdecorator
+def generate(ctx):
+    my_mf_run()
+
+
+from morphforgecontrib.mhdev.simulation.channels.hh_style.mmcalciumalphabetabeta import StdChlCalciumAlphaBetaBeta
+from morphforge.stdimports import units, cached_functor, qty
+#from morphforge import units
+
+@cached_functor
+def getCaChannels(env,PCA_in_cm_per_sec, CAI_in_nM, CAO_in_mM ):
+
+    # In Nick Dale's model, the two beta numbers do not equal the same at -25mV, so there is
+    # a jump in current at these values. Therefore, there is a small multiplier on Beta2 in
+    # order to bring it up slightly. Note the gradients are still not continuous.
+
+    mhmod = 0.33544896
+    ca_state_vars = { "m": {"alpha": [4.05, 0.0,1.0 ,-15.32, -13.57],
+                          "beta1":   [0.093 * 10.63,  0.093, -1, 10.63, 1],
+                          "beta2":   [1.28 + mhmod,0,1,5.39,12.11] } }
+    caChannels = env.Channel(
+                            StdChlCalciumAlphaBetaBeta,
+                            ion="ca",
+                            equation="m*m",
+                            permeability = PCA_in_cm_per_sec * units.cm / units.s, 
+                            intracellular_concentration = CAI_in_nM * units.nanomolar,
+                            extracellular_concentration = CAO_in_mM * units.millimolar,
+                            temperature = qty("300:K"),
+                            beta2threshold = qty("-25:mV"),
+                            statevars=ca_state_vars,
+                            name = 'TESTCA'
+                            )
+    return caChannels
+
+
+
+
+
+
+def _run_sim(PCA_in_cm_per_sec, CAI_in_nM, CAO_in_mM, VCMD_in_mV):
+    import morphforge.stdimports as mf
+    import morphforgecontrib.stdimports as mfc
+    from morphforge.stdimports import units as U
+
+    # The simulation:
+    env = mf.NEURONEnvironment()
+    sim = env.Simulation(cvode=True, tstop=1200*U.ms) #, dt=0.1 * U.ms)
+    cell = sim.create_cell(area= 2000 * U.um2, initial_voltage=-50*U.mV)
+
+
+    ca_chl = getCaChannels(env=env,PCA_in_cm_per_sec = PCA_in_cm_per_sec, CAI_in_nM=CAI_in_nM, CAO_in_mM=CAO_in_mM,  )
+    cell.apply_channel( channel=ca_chl,)
+
+
+
+    #lk_chl = env.Channel(mfc.StdChlLeak,
+    #                conductance=0.03333333 * U.mS/U.cm2,
+    #                reversalpotential=-50*U.mV )
+    #cell.apply_channel(lk_chl)
+
+
+
+
+    vc = sim.create_voltageclamp(name='VC', rs=0.000000001*U.MOhm, cell_location=cell.soma, amp1=VCMD_in_mV * U.mV, amp2=VCMD_in_mV * U.mV, amp3=VCMD_in_mV * U.mV, dur1=2000*U.ms, dur2=10*U.ms, dur3=10*U.ms)
+
+    sim.record(cell, name='V')
+    sim.record(ca_chl, cell_location=cell.soma, name='I', what=mf.StandardTags.CurrentDensity)
+
+    sim.record(ca_chl, cell_location=cell.soma, name='M', what=mf.StandardTags.StateVariable, state='m')
+    
+    sim.record(ca_chl, cell_location=cell.soma, name='IUNGATED', what='IUNGATED')
+        
+    sim.record(vc, name='VC_I', what=mf.StandardTags.Current)
+
+
+    return sim.run()
+
+
+def run_sim(PCA_in_cm_per_sec, CAI_in_nM, CAO_in_mM, VCMD_in_mV):
+    res = _run_sim(PCA_in_cm_per_sec = PCA_in_cm_per_sec, CAI_in_nM=CAI_in_nM, CAO_in_mM=CAO_in_mM, VCMD_in_mV=VCMD_in_mV)
+
+    V = res.get_trace('V')
+    VC_I = res.get_trace("VC_I")
+    CA_I = res.get_trace("I")
+    CA_M = res.get_trace("M")
+    CA_IUNGATED = res.get_trace("IUNGATED")
+    
+    time = V.time_pts_ms
+
+
+    d = np.vstack((time,
+                    V.data_pts_in('mV'),
+                    VC_I.data_pts_in('pA'),
+                    CA_M.data_pts_in(units.dimensionless),
+                    CA_I.data_pts_in('mA/cm2'),
+                    CA_IUNGATED.data_pts_in('mA/cm2'),
+                     )).T
+
+
+    fname_tmpl = "output/scenario035_PCA<PCA>_CAI<CAI>_CAO<CAO>_VCMD<VCMD>_results_".replace("<",'{').replace(">","}")
+
+    fname = fname_tmpl.format(PCA=PCA_in_cm_per_sec, CAI=CAI_in_nM, CAO=CAO_in_mM, VCMD=VCMD_in_mV)
+    np.savetxt(fname, d)
+
+
+
+def my_mf_run():
+
+    if waf_util.is_short_run():
+        #run_sim(PCA_in_cm_per_sec = 0.01, CAI_in_nM=100, CAO_in_mM=10, VCMD_in_mV=-20)
+        #run_sim(PCA_in_cm_per_sec = 0.01, CAI_in_nM=100, CAO_in_mM=10, VCMD_in_mV=-40)
+        #run_sim(PCA_in_cm_per_sec = 0.01, CAI_in_nM=100, CAO_in_mM=10, VCMD_in_mV=-60)
+        
+        run_sim(PCA_in_cm_per_sec = 0.01, CAI_in_nM=100, CAO_in_mM=10, VCMD_in_mV=-80)
+        run_sim(PCA_in_cm_per_sec = 0.03, CAI_in_nM=100, CAO_in_mM=10, VCMD_in_mV=-80)
+        return
+        
+        
+
+
+    PCAs= [0.01, 0.03]
+    CAIs= [100.0,1000.0]
+    CAOs= [10.0,20.0]
+    VCMDs = [ -80.0, -60.0, -40.0, -20.0,  0.0, 20.0, 40.0]           # In mV
+
+    for (PCA, CAI,CAO,VCMD) in itertools.product(PCAs, CAIs, CAOs, VCMDs):
+        run_sim(PCA_in_cm_per_sec = PCA, CAI_in_nM=CAI, CAO_in_mM=CAO, VCMD_in_mV=VCMD)
+
+
+    # We ran fine :)
+    print 'MF-RUN! OK'

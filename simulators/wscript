@@ -19,8 +19,8 @@ def generate(ctx):
     
         print 'Generating for:', tgt_dir, scenario
         recurse_dir =  '%s/%s' % (tgt_dir, scenario)
-        if not os.path.exists(recurse_dir) or not not os.path.exists(recurse_dir+'wscript'):
-            assert False
+        if not os.path.exists(recurse_dir) or  not os.path.exists(recurse_dir+'/wscript'):
+            assert False, 'Missing Simulator implementation for: %s %s' % (tgt_dir, scenario)
         ctx.recurse(recurse_dir)
 
 

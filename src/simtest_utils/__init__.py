@@ -301,7 +301,7 @@ def check_scenario(scenario_file, create_mredoc=True):
     if validators:
         for impl, param_filename_dict in impl_param_filename_dict.iteritems():
             print '   * Checking Implementation Values against tables: %s' %impl
-            for parameter, _validators in validators.iteritems():
+            for parameter, _validators in sorted(validators.iteritems()):
                 if not parameter in param_filename_dict:
                     print bcolors.WARNING, '        * Missing Parameters:',parameter, bcolors.ENDC
                     missing_parameter_sets.append( (impl, parameter) )
@@ -317,11 +317,11 @@ def check_scenario(scenario_file, create_mredoc=True):
 
                     table_results[impl, parameter, validator.test_expr] = (result, message, calc_value, validator)
 
-    #pylab.show()
-    create_mredoc=False
+    pylab.show()
+    create_mredoc=True
     if not create_mredoc:
         return None
-    #pylab.show()
+    pylab.show()
 
     print ' -- Producing mredoc output'
     import mredoc as mrd

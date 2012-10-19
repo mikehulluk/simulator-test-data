@@ -9,7 +9,10 @@ active:
 	#export STD_SIMS='morphforge'; export STD_SCENS='022'; export STD_SHORT='TRUE';  waf cleanup generate compare
 	#export STD_SIMS='morphforge'; export STD_SCENS='022';   waf cleanup generate compare
 	#export STD_SIMS='NEURON'; export STD_SCENS='030';   waf cleanup generate compare
-	export STD_SIMS='morphforge'; export STD_SCENS='03[5]';   waf cleanup generate  compare
+	#export STD_SIMS='morphforge'; export STD_SCENS='03[5]'; export STD_SHORT='TRUE';   waf cleanup generate compare
+	export STD_SIMS='morphforge'; export STD_SCENS='03[5]'; waf cleanup generate compare
+	#export STD_SIMS='morphforge'; export STD_SCENS='03[5]'; export STD_SHORT='TRUE'; waf cleanup generate compare
+	
 
 
 all:
@@ -24,7 +27,7 @@ clean:
 
 
 edit:
-	find scenario_descriptions/ | xargs geany &
+	find scenario_descriptions/ -type f| xargs geany &
 	find simulators  -type f | xargs geany &
 	find src/mfcuke/  -type f| xargs geany &
 	find src/simtest_utils/  -type f | xargs geany &
