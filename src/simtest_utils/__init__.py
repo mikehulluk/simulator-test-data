@@ -22,7 +22,7 @@ sys.path.append(clintdir)
 import os
 import re
 import decimal
-import sys
+import gc
 import collections
 import itertools
 
@@ -42,6 +42,7 @@ class bcolors:
     FAIL = '\033[91m'
     ENDC = '\033[0m'
 
+import mredoc as mrd
 
 
 scenario_path = os.path.join(rootdir, 'scenario_descriptions')
@@ -67,16 +68,73 @@ def check_scenarios(**kwargs):
     import waf_util
     scen_filenames = waf_util.get_all_scenarios()
 
-    results = []
+    # Run the individual comparisons, and produce a section for
+    # each:
+    all_summary_results = []
+    results_sections = []
     for tgt_scen in waf_util.get_target_scenarios():
         tgt_scen_fname = scen_filenames[tgt_scen]
-        res = check_scenario( tgt_scen_fname, **kwargs )
-        results.append(res)
-    return results
+        results_section, summary_results = check_scenario( tgt_scen_fname, **kwargs )
+        results_sections.append(results_section)
+        all_summary_results.extend(summary_results)
+    sim_details =  mrd.Section('Simulation Details', *results_sections)
+
+
+    # Produce an overall results table
+    print 'Summary Results'
+    for sum_res in all_summary_results:
+        print sum_res
+
+
+    sims = sorted( set( [ res.sim_name for res in all_summary_results] ) )
+    scens = sorted( set( [ res.scen_name for res in all_summary_results]) )
+    sim_scen_lut = dict([ ((res.sim_name, res.scen_name),res) for res in all_summary_results])
+
+    def table_entry(scen,sim):
+        key = (sim, scen)
+        res = sim_scen_lut.get(key , None)
+        #assert res is not None
+        if res is None:
+            return ":warning:[None Found]"
+        prefix = ':success:' if not res.nmissing and not res.nfails else ''
+        if res.nmissing:
+            prefix = ':warning:'
+        if res.nfails:
+            prefix = ':err:'
+        return prefix + res.summary_str()
+        return str(res)
+
+    header = [''] + sims
+    res = [ ]
+    for scen in scens:
+        res.append( [scen] + [ table_entry(scen,sim) for sim in sims ] )
+
+    overview_table = mrd.VerticalColTable( header, res)
+    sim_overview = mrd.Section('Results Overview', overview_table )
+    return (sim_details,sim_overview)
 
 
 
 
+
+
+import hashlib
+
+
+def cached_loadtxt(filename):
+    assert os.path.exists(filename)
+
+    h = hashlib.new('md5')
+    with open(filename,'r') as f:
+        h.update(f.read())
+    cache_filename = filename + '_%s.npy' %h.hexdigest()
+
+    if not os.path.exists(cache_filename):
+        data = np.loadtxt(filename)
+        np.save(cache_filename, data)
+        return data
+    else:
+        return np.load(cache_filename)
 
 
 
@@ -146,6 +204,41 @@ def parse_table(table_str, ParamTuple, variables, eps):
 
 
 
+class SimResults(object):
+    def __init__(self, sim_name, scen_name):
+        self.sim_name = sim_name
+        self.scen_name = scen_name
+        self.results = []
+        self.missing_parameters = []
+        self.found_parameters = []
+
+    def add_table_result(self, result, eps_err, eps_err_pc):
+        self.results.append( (result,eps_err, eps_err_pc) )
+
+    def record_missing_parameters(self, parameter):
+        self.missing_parameters.append(parameter)
+
+    def record_found_parameters(self, parameter):
+        self.found_parameters.append(parameter)
+
+    def summary_str(self):
+        return '%d Sucesses, %d Fails, %d Missing (Worst-Eps: %s %s%%)' % (self.nsuccesses, self.nfails, self.nmissing, self.worst_eps, self.worst_eps_pc)
+
+    @property
+    def nsuccesses(self):
+        return len([s for s in self.results if s[0] ])
+    @property
+    def nmissing(self):
+        return len(self.missing_parameters)
+    @property
+    def nfails(self):
+        return len([s for s in self.results if not s[0] ])
+    @property
+    def worst_eps(self):
+        return str(max( s[1] for s in self.results))[:5] if self.results else '='
+    @property
+    def worst_eps_pc(self):
+        return str(max( s[2] for s in self.results))[:5] if self.results else '='
 
 def check_scenario(scenario_file, create_mredoc=True):
 
@@ -158,7 +251,8 @@ def check_scenario(scenario_file, create_mredoc=True):
 
     # Generate the file-list:
     scen_output_dir = os.path.join(output_path, config['scenario_short'] )
-    file_list = [f for f in glob2.glob(scen_output_dir+'/**/*') if os.path.isfile(f) ]
+    file_list = [f for f in glob2.glob(scen_output_dir+'/**/*') if os.path.isfile(f) and not f.endswith('.npy') ]
+
 
 
     # Look at the configuration
@@ -183,12 +277,13 @@ def check_scenario(scenario_file, create_mredoc=True):
     # Compile the filename regular expression, and create a named-tuple for
     # storing the parameter values:
     filename_regex = re.compile(expected_filename_regex  )
-    ParamTuple = collections.namedtuple('ParamTuple', expected_variables )
+    ParamTuple = collections.namedtuple('ParamTuple', sorted(expected_variables) )
 
     # Sanity Check: Variables in filename tie up with those in [Parameter Values] block:
     if set(expected_variables) != set(parameters.keys()):
         print set(expected_variables), set(parameters.keys() )
         assert False, 'Parameters do not match filename template'
+
 
 
     # Look at all output files and find all the implementations:
@@ -215,6 +310,18 @@ def check_scenario(scenario_file, create_mredoc=True):
         print bcolors.FAIL, '      > ', unexpected_file, bcolors.ENDC
 
 
+    # Look at the implementations, and map them to known simulators:
+    import waf_util
+    known_simulators = waf_util.get_all_simulators()
+    impl_to_sim_map = {}
+    for impl_name in impl_param_filename_dict.keys():
+        possible_sims = [ sim for sim in known_simulators if impl_name.startswith(sim)]
+        assert len(possible_sims) == 1, "'%s' is not a suffix of the known simulators: %s " % (impl_name, ','.join(known_simulators))
+        impl_to_sim_map[impl_name] = possible_sims[0]
+    # Create a results object to hold the results for each simulator:
+    simulator_results = dict( [(sim, SimResults(sim_name=sim,scen_name=scenario_short)) for sim in set(impl_to_sim_map.values())] )
+
+
     # Build an dictionary mapping {params -> {impl: filename, impl:filename} }
     # param_impl_filename[param][impl] -> filename
     all_params = set( itertools.chain(*[ v.keys() for v in impl_param_filename_dict.values()] ) )
@@ -231,7 +338,7 @@ def check_scenario(scenario_file, create_mredoc=True):
     # Look at the expect-values table:
     if 'Check Values' in config:
         print ' -- Building Validation Table'
-        eps = config['Check Values']['eps'] 
+        eps = config['Check Values']['eps']
 
         expectation_tables = [ k for k in config['Check Values'] if k.startswith('expect') and not k.endswith('_eps') ]
         for tbl_name in expectation_tables:
@@ -245,10 +352,39 @@ def check_scenario(scenario_file, create_mredoc=True):
                 validators[k] = validators.get(k,[]) + v
 
 
+    from scipy.interpolate import interp1d
+    # Load the files, and downsample them
+    nfiles = sum( [ len(v) for v in impl_param_filename_dict.values() ] )
+    print '  * Preloading and downsampling data (%d files) ' % nfiles
+    stop = float( config['Sampling']['stop'] )
+    dt = float( config['Sampling']['dt'] )
+    common_time = np.arange( 0.0, stop, dt)
+    #print common_time
+    #print common_time.shape
+    #assert False
+    preloaded_data = {}
+    for impl, paramfilenamedict in impl_param_filename_dict.items():
+        for (param, filename) in paramfilenamedict.items():
+            print '.',
+            sys.stdout.flush()
+            data =  cached_loadtxt(filename)
+            assert data.shape[1] == len(columns)
+            original_time = data[:,0]
+            data_downsampler = interp1d( original_time, data.T, kind='linear', copy=False) #, bounds_error=False )
+            data_downsampled = data_downsampler(common_time).T
+            preloaded_data[filename] = data_downsampled
+            del data
+    print
+    print '    >> Invoking garbage collector'
+    gc.collect()
+    print '   >> Finished preloading'
+
+
 
     # Do the output:
     # #########################
     # Plot Comparitive graphs:
+    print '  * Producing Comparison Graphs'
     n_traces = len(columns) - 1
     figures = {}
     for param, impl_data in param_impl_filename_dict.iteritems():
@@ -256,35 +392,26 @@ def check_scenario(scenario_file, create_mredoc=True):
         f.suptitle('For Parameters: %s' % str(param))
         axes = [f.add_subplot(n_traces,1,i+1) for i in range(n_traces) ]
 
-
-        
         # Plot the data:
-        common_time = None
         data_limits = [ None]  * n_traces
         for (impl,filename) in impl_data.iteritems():
-            data=  np.loadtxt(filename)
-            
-            if common_time is None:
-                common_time = np.arange( data[0,0], data[-1,0],  0.1)
-                #common_time = data[:,0]
-                
+            data_all = preloaded_data[filename]
+
             for i in range(n_traces):
-                axes[i].plot( data[:,0], data[:,i+1], label='%s-%s'%(impl, columns[i+1]), linewidth=2, alpha=0.5,  )
-    
-                # Extract the min and maxes:
-                data_in_common_time = np.interp(common_time, data[:,0], data[:,i+1])
+                d =  data_all[:,i+1]
+                axes[i].plot( data_all[:,0], d, label='%s-%s'%(impl, columns[i+1]), linewidth=2, alpha=0.5,  )
+
+                # Calculate the maxiumu ranges of the data:
                 if data_limits[i] is None:
-                    data_limits[i] = data_in_common_time, data_in_common_time
+                    data_limits[i] = d, d
                 else:
-                    mn = np.minimum(data_in_common_time,data_limits[i][0])
-                    mx = np.maximum(data_in_common_time,data_limits[i][1])
+                    mn = np.minimum(d,data_limits[i][0])
+                    mx = np.maximum(d,data_limits[i][1])
                     data_limits[i] = (mn,mx)
-
-
 
         # Plot the discrepancy:
         for i in range(n_traces):
-            axes[i].fill_between(common_time, data_limits[i][0], data_limits[i][1], color='red', facecolor='red', alpha=0.6)
+            axes[i].fill_between(common_time, data_limits[i][0], data_limits[i][1], color='red', facecolor='red', alpha=0.6, label='Max distance between traces')
 
         # Smarten up the axes:
         for i, ax in enumerate(axes):
@@ -296,58 +423,83 @@ def check_scenario(scenario_file, create_mredoc=True):
         # Save the figures:
         figures[param] = f
 
+
+
     table_results = {}
     missing_parameter_sets = []
     if validators:
         for impl, param_filename_dict in impl_param_filename_dict.iteritems():
             print '   * Checking Implementation Values against tables: %s' %impl
             for parameter, _validators in sorted(validators.iteritems()):
+
+                # Parameter Missing:
                 if not parameter in param_filename_dict:
                     print bcolors.WARNING, '        * Missing Parameters:',parameter, bcolors.ENDC
                     missing_parameter_sets.append( (impl, parameter) )
+                    simulator_results[impl_to_sim_map[impl]].record_missing_parameters(parameter)
                     continue
 
-                print '       * Checking against parameters:',parameter
-                # Load the data:
-                data = np.loadtxt(param_filename_dict[parameter])
-                for validator in _validators:
-                    result, message, calc_value = validator.check_data(data, colnames=columns)
-                    print (bcolors.FAIL if not result else bcolors.OKGREEN),
-                    print  '           - ', result, message, bcolors.ENDC
+                # Parameter Found:
+                else:
+                    simulator_results[impl_to_sim_map[impl]].record_found_parameters(parameter)
 
-                    table_results[impl, parameter, validator.test_expr] = (result, message, calc_value, validator)
+                    print '       * Checking against parameters:',parameter
+                    data = preloaded_data[param_filename_dict[parameter] ]
+                    for validator in _validators:
+                        result, message, calc_value = validator.check_data(data, colnames=columns)
+                        print ({False:bcolors.FAIL,True:bcolors.OKGREEN}[result]),
+                        print  '           - ', result, message, bcolors.ENDC
 
-    pylab.show()
-    create_mredoc=True
-    if not create_mredoc:
-        return None
-    pylab.show()
+                        table_results[impl, parameter, validator.test_expr] = (result, message, calc_value, validator)
+                        eps_err = np.fabs( validator.expected_value - calc_value)
+                        eps_err_pc = np.fabs((eps_err/ calc_value)) * 100.
+                        simulator_results[impl_to_sim_map[impl]].add_table_result(result, eps_err = eps_err, eps_err_pc = eps_err_pc )
 
+
+    summary_results = simulator_results.values()
+
+
+    create_mredoc=True #and False
+    results_section = None
+    if create_mredoc:
+        results_section = build_mredoc_ouput( config=config,figures= figures, validators= validators, table_results= table_results, missing_parameter_sets= missing_parameter_sets, expected_variables= expected_variables, impl_param_filename_dict= impl_param_filename_dict)
+
+
+    # Return the detailed results, and what we will need to produce the summary graphs:
+    return results_section, summary_results
+
+
+def build_mredoc_ouput(config, figures, validators, table_results, missing_parameter_sets, expected_variables, impl_param_filename_dict):
     print ' -- Producing mredoc output'
     import mredoc as mrd
 
-    comparison_graphs = mrd.Section('Comparison Graphs',
-        [ mrd.Section(str(param), mrd.Image(fig, auto_adjust=False)) for (param,fig) in sorted(figures.items()) ]
+    comparison_graphs = mrd.Section('Trace Comparisons',
+        [
+        mrd.Section('Parameters: %s' % str(param),
+            mrd.VerticalColTable('V1|V2', ['a1|b1', 'a2|b2']),
+            mrd.Figure( mrd.Image(fig, auto_adjust=False), caption='Comparison'),
+            )
+            for (param,fig) in sorted(figures.items()) ]
         )
-
 
     tbl_comp_sections = []
     for impl in  impl_param_filename_dict:
         s = build_mredoc_results_table(impl=impl, validators=validators, table_results=table_results, missing_parameter_sets=missing_parameter_sets, expected_variables=expected_variables)
         tbl_comp_sections.append(s)
 
-
-
-    return mrd.SectionNewPage('Results of Scenario: %s' % scenario_title,
-        mrd.VerbatimBlock(config['description'] ) ,
-        mrd.Paragraph('Tesing against: %s' % ', '.join(impl_param_filename_dict) ),
-        mrd.TableOfContents(),
-        mrd.Section('Table Comparison', *tbl_comp_sections),
+    results_section = mrd.SectionNewPage('%s - %s' % ( config['scenario_short'].capitalize(), config['title'],),
+        mrd.Section('Overview',
+            mrd.Section('Description', mrd.VerbatimBlock(config['description'], caption='Description' ) ),
+            mrd.Section('Implementations', mrd.Paragraph('Tesing against: %s' % ', '.join(impl_param_filename_dict) ) ),
+            mrd.Section('Failures', mrd.Paragraph('TODO!')),
+            ),
+        mrd.Section('Table Comparisons',*tbl_comp_sections ),
         comparison_graphs,
     )
 
+    return results_section
 
-    pylab.show()
+
 
 
 
@@ -368,26 +520,31 @@ def build_mredoc_results_table(impl, validators, table_results, missing_paramete
                 if key in table_results:
                     R = table_results[key]
 
+                    prefix = ''
                     if table_results[key][0]:
+                        prefix=':success:'
                         res = 'OK %f (%s [eps:%s])' % ( R[2],R[3].expected_value, R[3].eps  )
                     else:
+                        prefix=':err:'
                         res = '***ERROR %f (%s [eps:%s]) ***' % ( R[2],R[3].expected_value, R[3].eps  )
                 else:
 
                     if (impl,param) in missing_parameter_sets:
+                        prefix=':warning:'
                         res = ' *** MISSING! *** '
                     else:
                         res = '-'
-                out_vals.append(str(res) )
+                out_vals.append(prefix + str(res))
 
             tbl_res.append(in_vals+out_vals)
 
 
         headers = input_cols + output_cols
 
-        res_tbl = mrd.VerticalColTable( headers, tbl_res)
+        res_tbl = mrd.VerticalColTable( headers, tbl_res,caption='Results for: %s' % impl,)
+        return res_tbl
 
-        impl_sect = mrd.Section('Table of Results for: %s' % impl,
-                res_tbl,
-                )
-        return impl_sect
+        #impl_sect = mrd.Section
+        #        res_tbl,
+        #        )
+        #return impl_sect

@@ -1,6 +1,6 @@
 
 scenario_short= scenario001
-title = Scenario 01: Responses of passive cell to step current injection
+title = Responses of passive cell to step current injection
 
 description = """
 In a simulation lasting 350.0ms
@@ -10,6 +10,12 @@ Inject step-current of <I> into cell1 from t=100ms until t=250ms
 Record cell1.V as $V
 Run the simulation
 """
+
+
+[Sampling]
+stop = 350
+dt = 0.1
+
 
 [Units]
     t = ms

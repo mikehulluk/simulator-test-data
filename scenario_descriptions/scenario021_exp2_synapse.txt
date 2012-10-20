@@ -13,6 +13,12 @@ Record SYN.Current as $SYN_I
 Run the simulation
 """
 
+[Sampling]
+stop = 350
+dt = 0.1
+
+
+
 [Units]
     t = ms
     GLEAK=mS/cm2
@@ -25,15 +31,15 @@ Run the simulation
     SYN_I=pA
 
 [Parameter Values]
-    GSYN=  500, 1000
-    ESYN=  0, -20
-    GLEAK= 0.03333. 0.014286
+    GSYN=   500, 1000
+    ESYN=   0, -20
+    GLEAK=  0.03333, 0.014286
     TCLOSE= 5, 20, 100000
-    TOPEN=1, 4
+    TOPEN=  1, 4
 
 [Output Format]
 columns = t, V, SYN_G, SYN_I
-base_filename = scenario021_ESYN<ESYN>_GSYN<GSYN>_GLEAK<GLEAK>_TCLOSE<TCLOSE>_TOPEN<TOPEN>_result
+base_filename = scenario021_ESYN<ESYN>_GSYN<GSYN>_GLEAK<GLEAK>_TCLOSE<TCLOSE>_TOPEN<TOPEN>_result_
 
 [Check Values]
 eps = 0.05

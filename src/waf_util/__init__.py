@@ -1,5 +1,5 @@
 import os
-import glob 
+import glob
 import fnmatch
 import configobj
 
@@ -10,7 +10,7 @@ def chdirdecorator(func):
     def new_func(ctx, *args, **kwargs):
         old_loc = os.getcwd()
         print 'Changing dir to:', ctx.path.abspath()
-        os.chdir( ctx.path.abspath() ) 
+        os.chdir( ctx.path.abspath() )
         res = func(ctx, *args, **kwargs)
         os.chdir(old_loc)
         return res
@@ -42,8 +42,13 @@ def ensure_output_links_setup():
 
 
 
-
-
+def get_all_simulators():
+    simulators = {
+        'NEURON':'10_neuron',
+        'morphforge':'20_morphforge',
+        'mfcuke':'30_mfcuke',
+    }
+    return simulators
 
 def get_all_scenarios():
     """returns a dict 'name'->'filename'"""
@@ -51,56 +56,52 @@ def get_all_scenarios():
     for scenario_file in glob.glob(Locations.scenario_descriptions() + '/*.txt'):
         print scenario_file
         name = configobj.ConfigObj(scenario_file)['scenario_short']
-        
+
         # Sanity checking the filename:
         fname_short = os.path.split(scenario_file)[-1]
         assert fname_short.startswith(name), 'Inconstistent naming: %s %s' %( fname_short, name)
-        
+
         assert not name in dct
         dct[name] = scenario_file
-        
+
     return dct
-        
+
 
 def get_target_simulator_dirs():
 
-    simulators = {
-        'NEURON':'10_neuron',
-        'morphforge':'20_morphforge',
-        'mfcuke':'30_mfcuke',
-    }
+    simulator_lut = get_all_simulators()
 
     simulator_str = os.environ.get('STD_SIMS','*')
     simulator_str = simulator_str.strip()
-        
+
     dirs_to_recurse = []
     for tok in simulator_str.split(';'):
         if tok == '*':
-            dirs_to_recurse.extend( simulators.values() )
+            dirs_to_recurse.extend( simulator_lut.values() )
         else:
-            dirs_to_recurse.append( simulators[tok] )
+            dirs_to_recurse.append( simulator_lut[tok] )
     return sorted(set(dirs_to_recurse))
 
 
 def get_target_scenarios():
     scen_str = os.environ.get('STD_SCENS','*')
     scen_str = scen_str.strip()
-    
+
     all_scenarios = get_all_scenarios()
-    
+
     scens = set()
     for tok in scen_str.split(';'):
-    
+
         scens.update(fnmatch.filter(all_scenarios, tok))
         scens.update(fnmatch.filter(all_scenarios, 'scenario' + tok))
 
     return sorted(scens)
-        
-    
+
+
 def is_short_run():
     if 'STD_SHORT' in os.environ:
         return True
     return False
-    
+
     return True
-    
+

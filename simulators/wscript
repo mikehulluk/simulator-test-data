@@ -3,9 +3,10 @@ import itertools
 
 
 import waf_util
-import fnmatch
+#import fnmatch
+import mredoc as mrd
 
-    
+
 
 
 @waf_util.chdirdecorator
@@ -14,16 +15,56 @@ def generate(ctx):
 
     dirs_to_recurse = waf_util.get_target_simulator_dirs()
     scenarios= waf_util.get_target_scenarios()
-    
+
+
+    completed_scenarios = []
+    missing_scenarios = []
+
     for (tgt_dir, scenario) in itertools.product(dirs_to_recurse, scenarios):
-    
+
         print 'Generating for:', tgt_dir, scenario
+
         recurse_dir =  '%s/%s' % (tgt_dir, scenario)
         if not os.path.exists(recurse_dir) or  not os.path.exists(recurse_dir+'/wscript'):
-            assert False, 'Missing Simulator implementation for: %s %s' % (tgt_dir, scenario)
-        ctx.recurse(recurse_dir)
+            print 'Missing Simulator implementation for: %s %s' % (tgt_dir, scenario)
+            missing_scenarios.append( (tgt_dir, scenario) )
+            continue
+
+        ctx.recurse(recurse_dir, name='generate')
+        completed_scenarios.append( (tgt_dir, scenario) )
 
 
 
+
+    # Let build a table of what has been run:
+    simulator_lut = waf_util.get_all_simulators()
+    simulator_lut_inv = dict([(b,a) for (a,b) in simulator_lut.items()])
+    simulators = [ a for (a,b) in sorted( simulator_lut.items(), key=lambda o:o[1] ) ]
+    
+    print completed_scenarios
+    print missing_scenarios
+    
+    def table_entry(sim,scen):
+        k = (simulator_lut[sim], scen)
+        if k in completed_scenarios:
+            return 'Run'
+        elif k in missing_scenarios:
+            return 'Not Supported'
+        else:
+            return '--'
+        
+    header = [''] +  simulators
+    rows = []
+    for scen in sorted( waf_util.get_all_scenarios() ):
+    
+        new_row = [scen] + [ table_entry(sim,scen) for sim in simulators ]
+        rows.append(new_row)
+    
+    ctx.sim_generate_redoc = mrd.Section('Simulations Run', mrd.VerticalColTable(header,rows) )
+    return 
+    
 
     
+
+
+

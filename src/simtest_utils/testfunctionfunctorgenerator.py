@@ -65,7 +65,6 @@ class TableTestFunctor(object):
         pcerr = ( abserr / self.expected_value ) * 100.
         msg =  '%s ==> %f == %f (%f %f%%) [Res==Expected eps:%s)' % (self.test_expr, result, self.expected_value, abserr,pcerr,  str(self.eps) )
         return self.eps.compare(exp=self.expected_value, got=result), msg, result 
-        #return np.fabs(result - self.expected_value) < self.eps, msg, result 
 
 
     def _get_data_slice(self, data_matrix, colnames):

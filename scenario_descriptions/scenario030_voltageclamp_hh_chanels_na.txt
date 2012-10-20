@@ -17,6 +17,13 @@ Run the simulation
 """
 
 
+[Sampling]
+stop = 600
+dt = 0.1
+
+
+
+
 [Units]
     t = ms
     VCMD=mV
@@ -40,7 +47,7 @@ Run the simulation
 
 [Output Format]
 columns = t, V, VC_I, M, H, G, I
-base_filename = scenario030_GNA<GNA>_EREV<EREV>_VCMD<VCMD>_result
+base_filename = scenario030_GNA<GNA>_EREV<EREV>_VCMD<VCMD>_result_
 
 [Check Values]
 eps = 0.005

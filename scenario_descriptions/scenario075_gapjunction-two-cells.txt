@@ -16,6 +16,12 @@ Record cell2.V as $V2
 Run the simulation
 """
 
+[Sampling]
+stop = 350
+dt = 0.1
+
+
+
 
 [Units]
     t = ms

@@ -10,8 +10,14 @@ active:
 	#export STD_SIMS='morphforge'; export STD_SCENS='022';   waf cleanup generate compare
 	#export STD_SIMS='NEURON'; export STD_SCENS='030';   waf cleanup generate compare
 	#export STD_SIMS='morphforge'; export STD_SCENS='03[5]'; export STD_SHORT='TRUE';   waf cleanup generate compare
-	export STD_SIMS='morphforge'; export STD_SCENS='03[5]'; waf cleanup generate compare
+	#export STD_SIMS='morphforge'; export STD_SCENS='03[5]'; waf cleanup generate compare
 	#export STD_SIMS='morphforge'; export STD_SCENS='03[5]'; export STD_SHORT='TRUE'; waf cleanup generate compare
+	#export STD_SIMS='morphforge'; export STD_SCENS='*'; export STD_SHORT='TRUE'; waf cleanup generate compare
+	#export STD_SIMS='morphforge'; export STD_SCENS='001'; export STD_SHORT='TRUE'; waf all
+	#export STD_SIMS='NEURON'; export STD_SCENS='001'; export STD_SHORT='TRUE'; waf all
+	#export STD_SIMS='morphforge'; export STD_SCENS='020'; waf compare
+	export STD_SIMS='*'; export STD_SCENS='*';  waf compare
+	#export STD_SIMS='*'; export STD_SCENS='001'; export STD_SHORT='TRUE'; waf all
 	
 
 

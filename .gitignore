@@ -5,3 +5,16 @@
 _output/*
 output/
 parser.out
+
+_output/
+output/
+*~
+
+*/_output/
+*/output/
+*/output
+
+simulators/10_neuron/scenario075/.libs/
+simulators/10_neuron/scenario075/.libs/*
+simulators/10_neuron/scenario075/i686/
+simulators/10_neuron/scenario075/i686/*

@@ -15,6 +15,7 @@ import re
 import shutil
 
 
+import mredoc as mrd
 
 
 def configure(ctx):
@@ -27,16 +28,13 @@ def ensure_exists(dir_name):
 
 
 def ensure_directory_structure_setup(ctx):
-   
+
     import waf_util
-    
+
      # Make sure the output folders are setup:
     ensure_exists('output')
     for scen in waf_util.get_all_scenarios():
         ensure_exists('output/%s'%scen)
-   
-    
-
 
     # Look in all the folders in 'simulators' and make sure that thier 'output'
     # directories point to the right place:
@@ -48,7 +46,6 @@ def ensure_directory_structure_setup(ctx):
         if not m:
             continue
 
-        print name
         sim, scen = m.groupdict()['sim'],  m.groupdict()['scen']
         oplink = os.path.join( name, 'output')
         opdir = os.path.abspath( os.path.join('output', scen) )
@@ -72,29 +69,71 @@ def ensure_directory_structure_setup(ctx):
 
 
 
+
+def produce_mredoc_output(sim_details,sim_overview,mrd_gen=None):
+    # Generate the output:
+    sect = mrd.Section('Simulator Comparison',
+                        mrd_gen,
+                        sim_overview,
+                        sim_details
+                        )
+
+    sect.to_html('~/test_results/')
+    #sect.to_pdf('~/test_results/output.pdf')
+
+
+
 def setupdirs(ctx):
     ensure_directory_structure_setup(ctx)
 
 def generate(ctx):
-    
+
     ensure_directory_structure_setup(ctx)
-    
-    # Call the simulators:
-    ctx.recurse('simulators')
+
+    return ctx.recurse('simulators', name='generate')
+
+
+
 
 def cleanup(ctx):
     if os.path.exists('output'):
         shutil.rmtree('output')
-    ctx.recurse('simulators/10_neuron/scenario075')
-    
+    ctx.recurse('simulators/10_neuron/scenario075', name='cleanup')
+
 
 def compare(ctx):
+
+
+    (sim_details,sim_overview) = _compare(ctx=ctx)
+
+    # Generate output:
+    produce_mredoc_output(
+        sim_details=sim_details,
+        sim_overview=sim_overview)
+
+
+
+def _compare(ctx):
     import simtest_utils
-    #simtest_utils.check_all_scenarios()
-    
-    sects = simtest_utils.check_scenarios(create_mredoc=True)
-    import mredoc as mrd
-    sect = mrd.Section('Results', *sects)
-    sect.to_html('~/test_results/')
-    sect.to_pdf('~/test_results/output.pdf')
-    
+    return simtest_utils.check_scenarios(create_mredoc=True)
+
+
+def all(ctx):
+    cleanup(ctx)
+
+    # Generate the results files:
+    generate(ctx)
+    mrd_gen = ctx.sim_generate_redoc
+
+    # Compare the outputs:
+    (sim_details,sim_overview) = _compare(ctx)
+
+    # Generate the output:
+    produce_mredoc_output(
+        sim_details=sim_details,
+        sim_overview=sim_overview,
+        mrd_gen=mrd_gen,
+        )
+
+
+

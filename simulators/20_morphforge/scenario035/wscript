@@ -105,7 +105,7 @@ def run_sim(PCA_in_cm_per_sec, CAI_in_nM, CAO_in_mM, VCMD_in_mV):
                      )).T
 
 
-    fname_tmpl = "output/scenario035_PCA<PCA>_CAI<CAI>_CAO<CAO>_VCMD<VCMD>_results_".replace("<",'{').replace(">","}")
+    fname_tmpl = "output/scenario035_PCA<PCA>_CAI<CAI>_CAO<CAO>_VCMD<VCMD>_results_morphforge".replace("<",'{').replace(">","}")
 
     fname = fname_tmpl.format(PCA=PCA_in_cm_per_sec, CAI=CAI_in_nM, CAO=CAO_in_mM, VCMD=VCMD_in_mV)
     np.savetxt(fname, d)

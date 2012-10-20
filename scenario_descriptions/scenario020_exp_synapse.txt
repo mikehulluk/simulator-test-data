@@ -12,6 +12,11 @@ Record SYN.Conductance as $SYN_G
 Record SYN.Current as $SYN_I
 Run the simulation
 """
+[Sampling]
+stop = 350
+dt = 0.1
+
+
 
 [Units]
     t = ms

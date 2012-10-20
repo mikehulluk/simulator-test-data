@@ -15,6 +15,11 @@ Record cell1.i as $I
 Run the simulation
 """
 
+[Sampling]
+stop = 500
+dt = 0.1
+
+
 
 [Units]
     t = ms
@@ -40,7 +45,7 @@ Run the simulation
 [Output Format]
 columns = t, V, VC_I, N, G, I
 
-base_filename = scenario031_GK<GK>_VCMD<VCMD>_result
+base_filename = scenario031_GK<GK>_VCMD<VCMD>_result_
 
 [Check Values]
 eps = 0.005

@@ -10,7 +10,7 @@ gsyn = gn * (e^(-t/t1) - e^(-t/t2) ) / (1 + eta *[mg2conc] * e^(-gamma * V) )
 """
 
 description = """
-In a simulation lasting 600ms
+In a simulation lasting 1200ms
 Create a single compartment neuron 'cell1' with area 0.01cm2 and initialvoltage -50mV and capacitance 1e-3 uF/cm2
 Add Leak channels to cell1 with conductance 0.03333mS/cm2 and reversalpotential -50mV
 Create an NMDA synapse 'SYN' onto cell1 with peak-conductance <GSYN>
@@ -30,6 +30,13 @@ Record SYN.Current as $SYN_I
 Record SYN.ConductanceWithoutVDep as $SYN_G
 Run the simulation
 """
+
+[Sampling]
+stop = 1200
+dt = 0.1
+
+
+
 
 [Units]
     t = ms
@@ -57,7 +64,7 @@ Run the simulation
 
 [Output Format]
 columns = t, V, VC_I, SYN_I, SYN_G
-base_filename = scenario022_GSYN<GSYN>_ETA<ETA>_MG2CONC<MG2CONC>_GAMMA<GAMMA>_VCMD<VCMD>_result
+base_filename = scenario022_GSYN<GSYN>_ETA<ETA>_MG2CONC<MG2CONC>_GAMMA<GAMMA>_VCMD<VCMD>_result_
 
 [Check Values]
 eps = 0.005

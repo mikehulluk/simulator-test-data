@@ -28,6 +28,12 @@ that the voltage-clamp is having to generating huge amounts of currents to drive
 (Mike Hull)
 """
 
+[Sampling]
+stop = 500
+dt = 0.1
+
+
+
 
 [Units]
     t = ms
