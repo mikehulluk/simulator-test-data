@@ -285,6 +285,22 @@ def check_scenario(scenario_file, create_mredoc=True):
         assert False, 'Parameters do not match filename template'
 
 
+    # Make a lsit of all the parameters we might expect to see:
+    expected_parameters = set([])
+    pnames = sorted(parameters.keys())
+    pvals = [parameters[pname] for pname in pnames]
+    for val in itertools.product(*pvals):
+        expected_parameters.add( ParamTuple( **dict(zip(pnames,[decimal.Decimal(v) for v in val]))))
+   
+
+    #print 'Expected Parameters'
+    #for a in sorted(expected_parameters):
+    #    print a
+    #print len(expected_parameters)
+
+
+
+
 
     # Look at all output files and find all the implementations:
     # Categorise all output files into a map impl_param_filename_dict[impl][param][filename]
@@ -292,6 +308,7 @@ def check_scenario(scenario_file, create_mredoc=True):
     print '   * %d Files Found' % len(file_list)
     impl_param_filename_dict = collections.defaultdict(dict)
     unexpected_files = []
+    unexpected_params = []
     for filename in file_list:
         m = filename_regex.match(filename)
         if m:
@@ -299,6 +316,11 @@ def check_scenario(scenario_file, create_mredoc=True):
             params = ParamTuple(**dict([(var_name, decimal.Decimal(param)) for (var_name, param) in zip(expected_variables, params)]))
             assert not params in impl_param_filename_dict[impl], 'Duplicate Parameters found!'
             impl_param_filename_dict[impl][params] = filename
+            if not params in expected_parameters:
+                #print params
+                #print params in expected_parameters
+                #assert False
+                unexpected_params.append((params,filename))
         else:
             unexpected_files.append(filename)
 
@@ -359,9 +381,6 @@ def check_scenario(scenario_file, create_mredoc=True):
     stop = float( config['Sampling']['stop'] )
     dt = float( config['Sampling']['dt'] )
     common_time = np.arange( 0.0, stop, dt)
-    #print common_time
-    #print common_time.shape
-    #assert False
     preloaded_data = {}
     for impl, paramfilenamedict in impl_param_filename_dict.items():
         for (param, filename) in paramfilenamedict.items():
@@ -378,6 +397,48 @@ def check_scenario(scenario_file, create_mredoc=True):
     print '    >> Invoking garbage collector'
     gc.collect()
     print '   >> Finished preloading'
+
+
+
+    TraceCompRes = collections.namedtuple('TraceComparisonResult', ['max_ptp','mean_ptp' ] )
+    # Calcuate the distances between the traces:
+    trace_comp_res = {}
+    for param, impl_data in param_impl_filename_dict.iteritems():
+        trace_comp_res[param] = {}
+        for i,colname in enumerate(columns):
+            if i==0:
+                continue
+
+            # Load ll the data for a paramter for a column
+            impls = sorted( impl_data.keys() )
+            impl_cols = [preloaded_data[impl_data[impl]][:,i] for impl in impls]
+            d = np.vstack( impl_cols)
+            assert d.shape[0] == len(impls)
+            assert d.shape[1] == common_time.shape[0]
+
+            # cacluate the ptp difference at each time point:
+            ptp = np.ptp(d, axis=0)
+            assert ptp.shape[0] == common_time.shape[0]
+
+            
+            res = TraceCompRes( 
+                    max_ptp= np.max(ptp),
+                    mean_ptp= np.mean(ptp) )
+            #largest_diff = np.max(ptp)
+            #mean_diff = np.mean(ptp)
+            trace_comp_res[param][colname] =  res
+            #print largest_diff
+
+
+            #print d.shape
+
+            #print impl_cols
+            #assert False
+
+            #for impl,filename in impl_data.items():
+                
+            pass
+        pass
 
 
 
@@ -408,6 +469,8 @@ def check_scenario(scenario_file, create_mredoc=True):
                     mn = np.minimum(d,data_limits[i][0])
                     mx = np.maximum(d,data_limits[i][1])
                     data_limits[i] = (mn,mx)
+
+
 
         # Plot the discrepancy:
         for i in range(n_traces):
@@ -462,25 +525,28 @@ def check_scenario(scenario_file, create_mredoc=True):
     create_mredoc=True #and False
     results_section = None
     if create_mredoc:
-        results_section = build_mredoc_ouput( config=config,figures= figures, validators= validators, table_results= table_results, missing_parameter_sets= missing_parameter_sets, expected_variables= expected_variables, impl_param_filename_dict= impl_param_filename_dict)
+        results_section = build_mredoc_ouput( trace_comp_res=trace_comp_res, unexpected_params=unexpected_params,config=config,figures= figures, validators= validators, table_results= table_results, missing_parameter_sets= missing_parameter_sets, expected_variables= expected_variables, impl_param_filename_dict= impl_param_filename_dict)
 
 
     # Return the detailed results, and what we will need to produce the summary graphs:
     return results_section, summary_results
 
 
-def build_mredoc_ouput(config, figures, validators, table_results, missing_parameter_sets, expected_variables, impl_param_filename_dict):
+def build_mredoc_ouput(trace_comp_res,unexpected_params, config, figures, validators, table_results, missing_parameter_sets, expected_variables, impl_param_filename_dict):
     print ' -- Producing mredoc output'
     import mredoc as mrd
 
-    comparison_graphs = mrd.Section('Trace Comparisons',
-        [
-        mrd.Section('Parameters: %s' % str(param),
-            mrd.VerticalColTable('V1|V2', ['a1|b1', 'a2|b2']),
+
+    def build_comp_section(param):
+        fig = figures[param]
+        trcs = sorted( trace_comp_res[param] )
+        comp_tbl_header, comp_tbl_data= zip( *[ ('%s.max_ptp' %c, trace_comp_res[param][c].max_ptp) for c in trcs])
+        return mrd.Section('Parameters: %s' % str(param),
+            mrd.VerticalColTable(comp_tbl_header, [comp_tbl_data] ),
             mrd.Figure( mrd.Image(fig, auto_adjust=False), caption='Comparison'),
             )
-            for (param,fig) in sorted(figures.items()) ]
-        )
+
+    comparison_graphs = mrd.Section('Trace Comparisons', [build_comp_section(p) for p in figures.keys() ] )
 
     tbl_comp_sections = []
     for impl in  impl_param_filename_dict:
@@ -492,6 +558,7 @@ def build_mredoc_ouput(config, figures, validators, table_results, missing_param
             mrd.Section('Description', mrd.VerbatimBlock(config['description'], caption='Description' ) ),
             mrd.Section('Implementations', mrd.Paragraph('Tesing against: %s' % ', '.join(impl_param_filename_dict) ) ),
             mrd.Section('Failures', mrd.Paragraph('TODO!')),
+            mrd.Section('Unexpected Files', mrd.Paragraph('Files:' + ','.join([str(u[1]) for u in unexpected_params]) )),
             ),
         mrd.Section('Table Comparisons',*tbl_comp_sections ),
         comparison_graphs,
@@ -529,6 +596,7 @@ def build_mredoc_results_table(impl, validators, table_results, missing_paramete
                         res = '***ERROR %f (%s [eps:%s]) ***' % ( R[2],R[3].expected_value, R[3].eps  )
                 else:
 
+                    prefix = ''
                     if (impl,param) in missing_parameter_sets:
                         prefix=':warning:'
                         res = ' *** MISSING! *** '

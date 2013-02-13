@@ -42,9 +42,19 @@ vecv = new Vector(0.5)
 vect.record(&t)
 vecv.record(&soma.v(0.5))
 
-soma.v(0.5) = -31
-//#soma.V = -31
-//v(soma) = -31
+
+
+objref fih
+fih = new FInitializeHandler("initspikes()")
+cvode.atol(1e-12)
+cvode.rtol(1e-12)
+
+proc initspikes(){
+   soma.v = VS
+}
+
+
+
 // Run the simulation:
 tstop = 350
 run() 

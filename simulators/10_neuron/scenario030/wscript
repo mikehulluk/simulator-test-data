@@ -48,3 +48,22 @@ def generate(ctx):
     call('nrniv -c GNA=200 -c EREV=80 -c VCMD=20 scenario030.hoc'.split())
     call('nrniv -c GNA=200 -c EREV=80 -c VCMD=40 scenario030.hoc'.split())
     call('nrniv -c GNA=200 -c EREV=80 -c VCMD=60 scenario030.hoc'.split())
+
+
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=-80 scenario030.hoc'.split())
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=-60 scenario030.hoc'.split())
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=-40 scenario030.hoc'.split())
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=-20 scenario030.hoc'.split())
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=0 scenario030.hoc'.split())
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=20 scenario030.hoc'.split())
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=40 scenario030.hoc'.split())
+    call('nrniv -c GNA=120 -c EREV=0 -c VCMD=60 scenario030.hoc'.split())
+    
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=-80 scenario030.hoc'.split())
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=-60 scenario030.hoc'.split())
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=-40 scenario030.hoc'.split())
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=-20 scenario030.hoc'.split())
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=0 scenario030.hoc'.split())
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=20 scenario030.hoc'.split())
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=40 scenario030.hoc'.split())
+    call('nrniv -c GNA=200 -c EREV=0 -c VCMD=60 scenario030.hoc'.split())

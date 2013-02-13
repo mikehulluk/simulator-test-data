@@ -13,9 +13,135 @@ def generate(ctx):
     if waf_util.is_short_run():
         return
     
-    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
     call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
     call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
     call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
     call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
 
+
+
+
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=10000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
+
+
+
+
+
+
+
+
+  
+    
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=0.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
+
+
+
+
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-51 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
+
+    
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=1.0 -c VS=-31 -c I=200 test1.hoc'.split())
+    
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-51 -c I=200 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=0 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=120 test1.hoc'.split())
+    call('nrniv -c A=16000 -c LK_G=1.3 -c LK_EREV=-31 -c C=2.0 -c VS=-31 -c I=200 test1.hoc'.split())
